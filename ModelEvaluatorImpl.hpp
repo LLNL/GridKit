@@ -86,7 +86,7 @@ namespace ModelLib
             yB_(size_),
             ypB_(size_),
             fB_(size_),
-            gB_(size_quad_),
+            gB_(size_opt_),
             param_(size_opt_),
             param_up_(size_opt_),
             param_lo_(size_opt_)

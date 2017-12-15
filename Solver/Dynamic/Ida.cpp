@@ -318,7 +318,7 @@ namespace Sundials
         ypB_ = N_VClone(yyB_);
         checkVectorAllocation(ypB_, "N_VClone");
         
-        qB_ = N_VNew_Serial(model_->size_quad());
+        qB_ = N_VNew_Serial(model_->size_opt());
         checkVectorAllocation(qB_, "N_VNew_Serial");
         
         return 0;
