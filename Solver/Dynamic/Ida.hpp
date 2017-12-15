@@ -64,6 +64,9 @@
 #include <iostream>
 #include <exception>
 #include <nvector/nvector_serial.h>
+#include <sunmatrix/sunmatrix_sparse.h>    /* access to sparse SUNMatrix           */
+#include <sunlinsol/sunlinsol_klu.h>       /* access to KLU linear solver          */
+#include <sunlinsol/sunlinsol_dense.h>     /* access to dense linear solver        */
 
 #include "ModelEvaluator.hpp"
 #include "DynamicSolver.hpp"
@@ -82,6 +85,7 @@ namespace AnalysisManager
             ~Ida();
             
             int configureSimulation();
+            int configureLinearSolver();
             int getDefaultInitialCondition();
             int setIntegrationTime(T t_init, T t_final, int nout=1);
             int initializeSimulation(T t0, bool findConsistent=false);
@@ -94,6 +98,7 @@ namespace AnalysisManager
             int deleteQuadrature();
             
             int configureAdjoint();
+            int configureLinearSolverBackward();
             int initializeAdjoint(I steps = 100);
             int initializeBackwardSimulation(T tf);
             int runForwardSimulation(T tf, int nout=1);
@@ -174,6 +179,10 @@ namespace AnalysisManager
             
         private:
             void* solver_;
+            SUNMatrix JacobianMat_;
+            SUNMatrix JacobianMatB_;
+            SUNLinearSolver linearSolver_;
+            SUNLinearSolver linearSolverB_;
             
             T t_init_;
             T t_final_;
@@ -200,7 +209,7 @@ namespace AnalysisManager
             static void copyVec(const std::vector<bool>& x, N_Vector y);
             
             //int check_flag(void *flagvalue, const char *funcname, int opt);
-            inline void checkVectorAllocation(N_Vector v, const char* functionName);
+            inline void checkAllocation(void* v, const char* functionName);
             inline void checkOutput(int retval, const char* functionName);
             
         };
