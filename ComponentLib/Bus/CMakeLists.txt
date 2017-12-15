@@ -55,6 +55,5 @@
 # endorsement purposes.
 #
 
-add_subdirectory(Bus)
-add_subdirectory(Generator2)
-set(component_models ${component_models} PARENT_SCOPE)
+add_library(Bus Bus.cpp)
+set(component_models ${component_models} Bus PARENT_SCOPE)
