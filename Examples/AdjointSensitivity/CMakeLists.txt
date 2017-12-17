@@ -56,5 +56,5 @@
 #
 
 add_executable(adjoint AdjointSensitivity.cpp)
-target_link_libraries(adjoint Generator2 ${solver_libs})
+target_link_libraries(adjoint Bus Generator4 ${solver_libs})
 install(TARGETS adjoint RUNTIME DESTINATION bin)

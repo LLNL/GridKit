@@ -1,25 +1,25 @@
 /*
- * 
+ *
  * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
  * Produced at the Lawrence Livermore National Laboratory.
  * Written by Slaven Peles <peles2@llnl.gov>.
  * LLNL-CODE-718378.
  * All rights reserved.
- * 
- * This file is part of GridKit. For details, see github.com/LLNL/GridKit 
- * Please also read the LICENSE file. 
- * 
- * Redistribution and use in source and binary forms, with or without 
+ *
+ * This file is part of GridKit. For details, see github.com/LLNL/GridKit
+ * Please also read the LICENSE file.
+ *
+ * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * - Redistributions of source code must retain the above copyright notice, 
+ * - Redistributions of source code must retain the above copyright notice,
  *   this list of conditions and the disclaimer below.
  * - Redistributions in binary form must reproduce the above copyright notice,
- *   this list of conditions and the disclaimer (as noted below) in the 
+ *   this list of conditions and the disclaimer (as noted below) in the
  *   documentation and/or other materials provided with the distribution.
- * - Neither the name of the LLNS/LLNL nor the names of its contributors may 
- *   be used to endorse or promote products derived from this software without 
+ * - Neither the name of the LLNS/LLNL nor the names of its contributors may
+ *   be used to endorse or promote products derived from this software without
  *   specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
  * CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -31,55 +31,68 @@
  * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
  * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISINGIN ANY 
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISINGIN ANY
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
- * 
- * Lawrence Livermore National Laboratory is operated by Lawrence Livermore 
- * National Security, LLC, for the U.S. Department of Energy, National 
+ *
+ * Lawrence Livermore National Laboratory is operated by Lawrence Livermore
+ * National Security, LLC, for the U.S. Department of Energy, National
  * Nuclear Security Administration under Contract DE-AC52-07NA27344.
- * 
- * This document was prepared as an account of work sponsored by an agency 
- * of the United States government. Neither the United States government nor 
- * Lawrence Livermore National Security, LLC, nor any of their employees 
- * makes any warranty, expressed or implied, or assumes any legal liability 
- * or responsibility for the accuracy, completeness, or usefulness of any 
- * information, apparatus, product, or process disclosed, or represents that 
- * its use would not infringe privately owned rights. Reference herein to 
- * any specific commercial product, process, or service by trade name, 
- * trademark, manufacturer, or otherwise does not necessarily constitute or 
- * imply its endorsement, recommendation, or favoring by the United States 
- * government or Lawrence Livermore National Security, LLC. The views and 
- * opinions of authors expressed herein do not necessarily state or reflect 
- * those of the United States government or Lawrence Livermore National 
- * Security, LLC, and shall not be used for advertising or product 
- * endorsement purposes. 
- * 
+ *
+ * This document was prepared as an account of work sponsored by an agency
+ * of the United States government. Neither the United States government nor
+ * Lawrence Livermore National Security, LLC, nor any of their employees
+ * makes any warranty, expressed or implied, or assumes any legal liability
+ * or responsibility for the accuracy, completeness, or usefulness of any
+ * information, apparatus, product, or process disclosed, or represents that
+ * its use would not infringe privately owned rights. Reference herein to
+ * any specific commercial product, process, or service by trade name,
+ * trademark, manufacturer, or otherwise does not necessarily constitute or
+ * imply its endorsement, recommendation, or favoring by the United States
+ * government or Lawrence Livermore National Security, LLC. The views and
+ * opinions of authors expressed herein do not necessarily state or reflect
+ * those of the United States government or Lawrence Livermore National
+ * Security, LLC, and shall not be used for advertising or product
+ * endorsement purposes.
+ *
  */
 
 
 #include <iostream>
 #include <iomanip>
 
-#include "ComponentLib/Generator2/Generator2.hpp"
+#include "ComponentLib/Bus/Bus.hpp"
+#include "ComponentLib/Generator4/Generator4.hpp"
 #include "Solver/Dynamic/Ida.hpp"
 
-#include <IpIpoptApplication.hpp>
-#include <IpSolveStatistics.hpp>
-
-
-
+/*
+ * Compute gradient of an objective function expressed as an integral over
+ * system trajectory. The gradient is computed numerically and using
+ * adjoint sensitivity analysis.
+ *
+ * The test case is a 4th order generator connected to an infinite bus.
+ * The objective function is total frequency deviation computed over
+ * system trajectory after generator short circuit fault.
+ *
+ */
 int main()
 {
     using namespace ModelLib;
     using namespace AnalysisManager::Sundials;
+    using namespace AnalysisManager;
 
-    ModelEvaluator<double, double, size_t>* model = new Generator2<double, double, size_t>();
+    // Create an infinite bus
+    Bus<double, double, size_t>* bus = new Bus<double, double, size_t>(1.0, 0.0, 0.8, 0.3);
+
+    // Attach a generator to that bus
+    ModelEvaluator<double, double, size_t>* model = new Generator4<double, double, size_t>(bus);
+
+    // Create numerical integrator and configure it for the generator model
     Ida<double, double, size_t>* idas = new Ida<double, double, size_t>(model);
-    
+
     model->allocate();
 
-    double t_init  = 0.0;  
+    double t_init  = 0.0;
     double t_final = 50.0;
 
     // setup simulation
@@ -89,64 +102,83 @@ int main()
     idas->initializeSimulation(t_init);
     idas->configureQuadrature();
     idas->initializeQuadrature();
-    
-    double t_fault = 0.1;
-    double t_clear = 0.2;
-    double g1, g2, eps = 1e-5;
-    idas->runSimulation(t_fault);
+
+
+    idas->runSimulationQuadrature(0.1, 2);
+    idas->saveInitialCondition();
+
     // create initial condition after a fault
     {
-        Generator2<double, double, size_t>* gen2 = dynamic_cast<Generator2<double, double, size_t>*>(model);
-        gen2->shortCircuit();
-        idas->runSimulation(t_clear, 2);
-        gen2->restore();
+        Generator4<double, double, size_t>* gen = dynamic_cast<Generator4<double, double, size_t>*>(model);
+        gen->V() = 0.0;
+        idas->runSimulationQuadrature(3.0, 20);
+        gen->V() = 1.0;
         idas->saveInitialCondition();
     }
-    
+
+    // Get pointer the objective function
     const double* Q = idas->getIntegral();
-    // run simulation
+
+    // Compute the objective function as an integral over the system trajectory
     idas->getSavedInitialCondition();
     idas->initializeSimulation(t_init);
     idas->initializeQuadrature();
-    idas->runSimulationQuadrature(t_final, 10);
+    idas->runSimulationQuadrature(t_final, 100);
+
+    std::cout << "\n\nCost of computing objective function:\n\n";
     idas->printFinalStats();
-    g1 = Q[0];
-    std::cout << "Q = " << std::setprecision(15) << std::scientific << g1 << "\n";
-    
-    // run simulation with perturbed parameter
-    model->param()[0] += eps;
-    idas->getSavedInitialCondition();
-    idas->initializeSimulation(t_init);
-    idas->initializeQuadrature();
-    idas->runSimulationQuadrature(t_final);
-    idas->printFinalStats();
-    g2 = Q[0];
-    std::cout << "Q = " << g1 << "\n";
-    
-    // restore parameter to original value
-    model->param()[0] -= eps;
-    
-    // initialize adjoint and run forward simulation
+
+    const double g1 = Q[0];
+    const double eps = 5e-4;
+
+    // Compute gradient of the objective function numerically
+    std::vector<double> dGdp(model->size_opt());
+
+    for (unsigned i=0; i<model->size_opt(); ++i)
+    {
+      model->param()[i] += eps;
+      idas->getSavedInitialCondition();
+      idas->initializeSimulation(t_init);
+      idas->initializeQuadrature();
+      idas->runSimulationQuadrature(t_final,10);
+
+      std::cout << "\n\nCost of computing derivative with respect to parameter "
+                << i << ":\n\n";
+      idas->printFinalStats();
+      double g2 = Q[0];
+
+      // restore parameter to original value
+      model->param()[i] -= eps;
+
+      // Evaluate dG/dp numerically
+      dGdp[i] = (g2 - g1)/eps;
+    }
+
+    // Compute gradient of the objective function using adjoint method
     idas->initializeAdjoint();
     idas->getSavedInitialCondition();
     idas->initializeSimulation(t_init);
     idas->initializeQuadrature();
     idas->runForwardSimulation(t_final);
+
+    std::cout << "\n\nCost of forward simulation for adjoint\n"
+              << "sensitivity analysis:\n\n";
     idas->printFinalStats();
-    
-    // Evaluate dG/dp numerically
-    std::cout << "dG/dp (numerical) = " << (g2 - g1)/eps << "\n";
-    
+
     idas->initializeBackwardSimulation(t_final);
-
-    // Backward simulation evaluates dG/dp from adjoint
     idas->runBackwardSimulation(t_init);
-    double* neg_dGdp = idas->getAdjointIntegral();
-    std::cout << "dG/dp (adjoint)   = " << -neg_dGdp[0]      << "\n";
 
-    idas->deleteSimulation();
-    delete idas;
-    delete model;
+    std::cout << "\n\nCost of adjoint sensitivity analysis:\n\n";
+    idas->printFinalStats();
+
+    // Compare results
+    std::cout << "\n\nComparison of numerical and adjoint results:\n\n";
+    double* neg_dGdp = idas->getAdjointIntegral();
+    for (unsigned i=0; i<model->size_opt(); ++i)
+    {
+      std::cout << "dG/dp" << i << " (numerical) = " <<      dGdp[i] << "\n";
+      std::cout << "dG/dp" << i << " (adjoint)   = " << -neg_dGdp[i] << "\n\n";
+    }
 
     return 0;
 }

@@ -152,7 +152,7 @@ int Generator4<ScalarT, T, I>::initialize()
     yp_[4] = 0.0;
     yp_[5] = 0.0;
 
-    /// \todo Should not set control parameter values here.
+    /// Set control parameter values here.
     Ef_ = Eq - (Xd_ - Xdp_)*Id;                // <~ set to steady state value
     Pm_ = Ed*Id + Eq*Iq + (Xdp_ - Xqp_)*Id*Iq; // <~ set to steady state value
 
