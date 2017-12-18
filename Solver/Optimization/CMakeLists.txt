@@ -56,7 +56,7 @@
 #
 
 include_directories(${IPOPT_INCLUDE_DIR})
-add_library(DynamicObjective SHARED DynamicObjective.cpp)
-target_link_libraries(DynamicObjective Ida ${IPOPT_LIBRARY} ${LAPACK_LIBRARIES})
-set(solver_libs ${solver_libs} DynamicObjective PARENT_SCOPE)
-install(TARGETS DynamicObjective LIBRARY DESTINATION lib)
+add_library(DynamicOpt SHARED DynamicObjective.cpp DynamicConstraint.cpp)
+target_link_libraries(DynamicOpt Ida ${IPOPT_LIBRARY} ${LAPACK_LIBRARIES})
+set(solver_libs ${solver_libs} DynamicOpt PARENT_SCOPE)
+install(TARGETS DynamicOpt LIBRARY DESTINATION lib)

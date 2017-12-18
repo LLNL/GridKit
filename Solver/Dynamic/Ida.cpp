@@ -674,6 +674,7 @@ namespace Sundials
 
     // Compiler will prevent building modules with data type incompatible with realtype
     template class Ida<realtype, realtype, long int>;
+    template class Ida<realtype, realtype, int>;
     template class Ida<realtype, realtype, size_t>;
 
 } // namespace Sundials

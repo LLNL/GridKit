@@ -59,8 +59,8 @@
 
 
 
-#ifndef _IPOPT_SOLVER_HPP_
-#define _IPOPT_SOLVER_HPP_
+#ifndef _IPOPT_DYNAMIC_OBJECTIVE_HPP_
+#define _IPOPT_DYNAMIC_OBJECTIVE_HPP_
 
 #include <IpTNLP.hpp>
 #include "OptimizationSolver.hpp"
@@ -144,4 +144,4 @@ namespace AnalysisManager {
     } // namespace IpoptInterface
 } // namespace AnalysisManager
 
-#endif // _IPOPT_SOLVER_HPP_
+#endif // _IPOPT_DYNAMIC_OBJECTIVE_HPP_
