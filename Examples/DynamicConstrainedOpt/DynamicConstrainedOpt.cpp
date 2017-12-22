@@ -98,7 +98,8 @@ int main()
     idas->runSimulation(t_fault);
     // create initial condition after a fault
     {
-        Generator2<double, double, size_t>* gen2 = dynamic_cast<Generator2<double, double, size_t>*>(model);
+        Generator2<double, double, size_t>* gen2 =
+            dynamic_cast<Generator2<double, double, size_t>*>(model);
         gen2->shortCircuit();
         idas->runSimulation(t_clear, 2);
         gen2->restore();
@@ -123,10 +124,10 @@ int main()
     ipoptApp->Options()->SetStringValue("hessian_approximation", "limited-memory");
     ipoptApp->Options()->SetNumericValue("tol", 1e-4);
     ipoptApp->Options()->SetIntegerValue("print_level", 0);
-    ipoptApp->Options()->SetStringValue("print_user_options", "yes");
 
     // Create dynamic objective interface to Ipopt solver
-    Ipopt::SmartPtr<Ipopt::TNLP> ipoptDynamicObjectiveInterface = new IpoptInterface::DynamicObjective<double, double, size_t>(idas);
+    Ipopt::SmartPtr<Ipopt::TNLP> ipoptDynamicObjectiveInterface =
+        new IpoptInterface::DynamicObjective<double, double, size_t>(idas);
 
     // Solve the problem
     status = ipoptApp->OptimizeTNLP(ipoptDynamicObjectiveInterface);
@@ -134,13 +135,16 @@ int main()
 
     if (status == Ipopt::Solve_Succeeded) {
         // Print result
-        std::cout << "\nSucess:\n The problem solved in " << ipoptApp->Statistics()->IterationCount() << " iterations!\n";
-        std::cout << " Optimal value of Pm = " << model->param()[0] << "\n";
-        std::cout << " The final value of the objective function G(Pm) = " << ipoptApp->Statistics()->FinalObjective() << "\n\n";
+        std::cout << "\nSucess:\n The problem solved in "
+                  << ipoptApp->Statistics()->IterationCount() << " iterations!\n"
+                  << " Optimal value of Pm = " << model->param()[0] << "\n"
+                  << " The final value of the objective function G(Pm) = "
+                  << ipoptApp->Statistics()->FinalObjective() << "\n\n";
     }
 
     // Create dynamic constraint interface to Ipopt solver
-    Ipopt::SmartPtr<Ipopt::TNLP> ipoptDynamicConstraintInterface = new IpoptInterface::DynamicConstraint<double, double, size_t>(idas);
+    Ipopt::SmartPtr<Ipopt::TNLP> ipoptDynamicConstraintInterface =
+        new IpoptInterface::DynamicConstraint<double, double, size_t>(idas);
 
     // Solve the problem
     status = ipoptApp->OptimizeTNLP(ipoptDynamicConstraintInterface);
@@ -148,9 +152,11 @@ int main()
 
     if (status == Ipopt::Solve_Succeeded) {
         // Print result
-        std::cout << "\nSucess:\n The problem solved in " << ipoptApp->Statistics()->IterationCount() << " iterations!\n";
-        std::cout << " Optimal value of Pm = " << model->param()[0] << "\n";
-        std::cout << " The final value of the objective function G(Pm) = " << ipoptApp->Statistics()->FinalObjective() << "\n\n";
+        std::cout << "\nSucess:\n The problem solved in "
+                  << ipoptApp->Statistics()->IterationCount() << " iterations!\n"
+                  << " Optimal value of Pm = " << model->param()[0] << "\n"
+                  << " The final value of the objective function G(Pm) = "
+                  << ipoptApp->Statistics()->FinalObjective() << "\n\n";
     }
 
     delete idas;
