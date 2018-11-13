@@ -64,7 +64,7 @@
 
 namespace ModelLib
 {
-    template <class ScalarT, typename T, typename I> class Bus;
+    template <class ScalarT, typename IdxT> class Bus;
 }
 
 namespace ModelLib
@@ -73,30 +73,32 @@ namespace ModelLib
      * @brief Implementation of a fourth order generator model.
      *
      */
-    template  <class ScalarT, typename T, typename I>
-    class Generator4 : public ModelEvaluatorImpl<ScalarT, T, I>
+    template  <class ScalarT, typename IdxT>
+    class Generator4 : public ModelEvaluatorImpl<ScalarT, IdxT>
     {
-        using ModelEvaluatorImpl<ScalarT, T, I>::size_;
-        using ModelEvaluatorImpl<ScalarT, T, I>::nnz_;
-        using ModelEvaluatorImpl<ScalarT, T, I>::time_;
-        using ModelEvaluatorImpl<ScalarT, T, I>::alpha_;
-        using ModelEvaluatorImpl<ScalarT, T, I>::rtol_;
-        using ModelEvaluatorImpl<ScalarT, T, I>::atol_;
-        using ModelEvaluatorImpl<ScalarT, T, I>::y_;
-        using ModelEvaluatorImpl<ScalarT, T, I>::yp_;
-        using ModelEvaluatorImpl<ScalarT, T, I>::tag_;
-        using ModelEvaluatorImpl<ScalarT, T, I>::f_;
-        using ModelEvaluatorImpl<ScalarT, T, I>::g_;
-        using ModelEvaluatorImpl<ScalarT, T, I>::yB_;
-        using ModelEvaluatorImpl<ScalarT, T, I>::ypB_;
-        using ModelEvaluatorImpl<ScalarT, T, I>::fB_;
-        using ModelEvaluatorImpl<ScalarT, T, I>::gB_;
-        using ModelEvaluatorImpl<ScalarT, T, I>::param_;
-        using ModelEvaluatorImpl<ScalarT, T, I>::param_up_;
-        using ModelEvaluatorImpl<ScalarT, T, I>::param_lo_;
+        using ModelEvaluatorImpl<ScalarT, IdxT>::size_;
+        using ModelEvaluatorImpl<ScalarT, IdxT>::nnz_;
+        using ModelEvaluatorImpl<ScalarT, IdxT>::time_;
+        using ModelEvaluatorImpl<ScalarT, IdxT>::alpha_;
+        using ModelEvaluatorImpl<ScalarT, IdxT>::rtol_;
+        using ModelEvaluatorImpl<ScalarT, IdxT>::atol_;
+        using ModelEvaluatorImpl<ScalarT, IdxT>::y_;
+        using ModelEvaluatorImpl<ScalarT, IdxT>::yp_;
+        using ModelEvaluatorImpl<ScalarT, IdxT>::tag_;
+        using ModelEvaluatorImpl<ScalarT, IdxT>::f_;
+        using ModelEvaluatorImpl<ScalarT, IdxT>::g_;
+        using ModelEvaluatorImpl<ScalarT, IdxT>::yB_;
+        using ModelEvaluatorImpl<ScalarT, IdxT>::ypB_;
+        using ModelEvaluatorImpl<ScalarT, IdxT>::fB_;
+        using ModelEvaluatorImpl<ScalarT, IdxT>::gB_;
+        using ModelEvaluatorImpl<ScalarT, IdxT>::param_;
+        using ModelEvaluatorImpl<ScalarT, IdxT>::param_up_;
+        using ModelEvaluatorImpl<ScalarT, IdxT>::param_lo_;
 
     public:
-        Generator4(Bus<ScalarT, T, I>* bus);
+        typedef typename ModelEvaluatorImpl<ScalarT, IdxT>::real_type real_type;
+
+        Generator4(Bus<ScalarT, IdxT>* bus);
         virtual ~Generator4();
 
         int allocate();
@@ -130,25 +132,25 @@ namespace ModelLib
         inline ScalarT frequencyPenaltyDer(ScalarT omega);
 
     private:
-        T H_;
-        T D_;
-        T Xq_;
-        T Xd_;
-        T Xqp_;
-        T Xdp_;
-        T Rs_;
-        T Tq0p_;
-        T Td0p_;
-        T Ef_;
-        T Pm_;
-        T omega_s_;
-        T omega_b_;
-        T omega_up_;
-        T omega_lo_;
-        T c_;
-        T beta_;
+        real_type H_;
+        real_type D_;
+        real_type Xq_;
+        real_type Xd_;
+        real_type Xqp_;
+        real_type Xdp_;
+        real_type Rs_;
+        real_type Tq0p_;
+        real_type Td0p_;
+        real_type Ef_;
+        real_type Pm_;
+        real_type omega_s_;
+        real_type omega_b_;
+        real_type omega_up_;
+        real_type omega_lo_;
+        real_type c_;
+        real_type beta_;
 
-        Bus<ScalarT, T, I>* bus_;
+        Bus<ScalarT, IdxT>* bus_;
     };
 
 } // namespace ModelLib

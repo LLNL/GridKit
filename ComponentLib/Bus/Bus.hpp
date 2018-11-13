@@ -72,28 +72,30 @@ namespace ModelLib
      * @todo Implement power flow equations
      *
      */
-    template  <class ScalarT, typename T, typename I>
-    class Bus : public ModelEvaluatorImpl<ScalarT, T, I>
+    template  <class ScalarT, typename IdxT>
+    class Bus : public ModelEvaluatorImpl<ScalarT, IdxT>
     {
-        using ModelEvaluatorImpl<ScalarT, T, I>::size_;
-        using ModelEvaluatorImpl<ScalarT, T, I>::nnz_;
-        using ModelEvaluatorImpl<ScalarT, T, I>::time_;
-        using ModelEvaluatorImpl<ScalarT, T, I>::alpha_;
-        using ModelEvaluatorImpl<ScalarT, T, I>::rtol_;
-        using ModelEvaluatorImpl<ScalarT, T, I>::atol_;
-        using ModelEvaluatorImpl<ScalarT, T, I>::y_;
-        using ModelEvaluatorImpl<ScalarT, T, I>::yp_;
-        using ModelEvaluatorImpl<ScalarT, T, I>::f_;
-        using ModelEvaluatorImpl<ScalarT, T, I>::g_;
-        using ModelEvaluatorImpl<ScalarT, T, I>::yB_;
-        using ModelEvaluatorImpl<ScalarT, T, I>::ypB_;
-        using ModelEvaluatorImpl<ScalarT, T, I>::fB_;
-        using ModelEvaluatorImpl<ScalarT, T, I>::gB_;
-        using ModelEvaluatorImpl<ScalarT, T, I>::param_;
-        using ModelEvaluatorImpl<ScalarT, T, I>::param_up_;
-        using ModelEvaluatorImpl<ScalarT, T, I>::param_lo_;
+        using ModelEvaluatorImpl<ScalarT, IdxT>::size_;
+        using ModelEvaluatorImpl<ScalarT, IdxT>::nnz_;
+        using ModelEvaluatorImpl<ScalarT, IdxT>::time_;
+        using ModelEvaluatorImpl<ScalarT, IdxT>::alpha_;
+        using ModelEvaluatorImpl<ScalarT, IdxT>::rtol_;
+        using ModelEvaluatorImpl<ScalarT, IdxT>::atol_;
+        using ModelEvaluatorImpl<ScalarT, IdxT>::y_;
+        using ModelEvaluatorImpl<ScalarT, IdxT>::yp_;
+        using ModelEvaluatorImpl<ScalarT, IdxT>::f_;
+        using ModelEvaluatorImpl<ScalarT, IdxT>::g_;
+        using ModelEvaluatorImpl<ScalarT, IdxT>::yB_;
+        using ModelEvaluatorImpl<ScalarT, IdxT>::ypB_;
+        using ModelEvaluatorImpl<ScalarT, IdxT>::fB_;
+        using ModelEvaluatorImpl<ScalarT, IdxT>::gB_;
+        using ModelEvaluatorImpl<ScalarT, IdxT>::param_;
+        using ModelEvaluatorImpl<ScalarT, IdxT>::param_up_;
+        using ModelEvaluatorImpl<ScalarT, IdxT>::param_lo_;
 
     public:
+        typedef typename ModelEvaluatorImpl<ScalarT, IdxT>::real_type real_type;
+
         Bus();
         Bus(ScalarT V, ScalarT theta, ScalarT P, ScalarT Q);
         virtual ~Bus();

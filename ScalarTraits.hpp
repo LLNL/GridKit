@@ -57,86 +57,25 @@
  *
  */
 
-#ifndef _MODEL_EVALUATOR_HPP_
-#define _MODEL_EVALUATOR_HPP_
+#ifndef _SCALAR_TRAITS_HPP_
+#define _SCALAR_TRAITS_HPP_
 
-#include <vector>
-#include <ScalarTraits.hpp>
-
-namespace ModelLib
+namespace GridKit
 {
-
-    /*!
-     * @brief Abstract class describing a model.
-     *
-     */
-    template <class ScalarT, typename IdxT>
-    class ModelEvaluator
+    template <class ScalarT>
+    class ScalarTraits
     {
-    public:
-        typedef typename GridKit::ScalarTraits<ScalarT>::real_type real_type;
-
-        ModelEvaluator(){}
-        virtual ~ModelEvaluator(){}
-
-        virtual int allocate() = 0;
-        virtual int initialize() = 0;
-        virtual int tagDifferentiable() = 0;
-        virtual int evaluateResidual() = 0;
-        virtual int evaluateJacobian() = 0;
-        virtual int evaluateIntegrand() = 0;
-
-        virtual int initializeAdjoint() = 0;
-        virtual int evaluateAdjointResidual() = 0;
-        //virtual int evaluateAdjointJacobian() = 0;
-        virtual int evaluateAdjointIntegrand() = 0;
-
-        virtual IdxT size() = 0;
-        virtual IdxT nnz() = 0;
-        virtual IdxT size_quad() = 0;
-        virtual IdxT size_opt() = 0;
-        virtual void updateTime(real_type t, real_type a) = 0;
-        virtual void setTolerances(real_type& rtol, real_type& atol) const = 0;
-
-        virtual std::vector<ScalarT>& y() = 0;
-        virtual const std::vector<ScalarT>& y() const = 0;
-
-        virtual std::vector<ScalarT>& yp() = 0;
-        virtual const std::vector<ScalarT>& yp() const = 0;
-
-        virtual std::vector<bool>& tag() = 0;
-        virtual const std::vector<bool>& tag() const = 0;
-
-        virtual std::vector<ScalarT>& yB() = 0;
-        virtual const std::vector<ScalarT>& yB() const = 0;
-
-        virtual std::vector<ScalarT>& ypB() = 0;
-        virtual const std::vector<ScalarT>& ypB() const = 0;
-
-        virtual std::vector<ScalarT>& param() = 0;
-        virtual const std::vector<ScalarT>& param() const = 0;
-
-        virtual std::vector<ScalarT>& param_up() = 0;
-        virtual const std::vector<ScalarT>& param_up() const = 0;
-
-        virtual std::vector<ScalarT>& param_lo() = 0;
-        virtual const std::vector<ScalarT>& param_lo() const = 0;
-
-        virtual std::vector<ScalarT>& getResidual() = 0;
-        virtual const std::vector<ScalarT>& getResidual() const = 0;
-
-        virtual std::vector<ScalarT>& getIntegrand() = 0;
-        virtual const std::vector<ScalarT>& getIntegrand() const = 0;
-
-        virtual std::vector<ScalarT>& getAdjointResidual() = 0;
-        virtual const std::vector<ScalarT>& getAdjointResidual() const = 0;
-
-        virtual std::vector<ScalarT>& getAdjointIntegrand() = 0;
-        virtual const std::vector<ScalarT>& getAdjointIntegrand() const = 0;
-
     };
 
+    template<>
+    class ScalarTraits<double>
+    {
+    public:
+        typedef double real_type;
+        typedef double norm_type;
+        typedef double scalar_type;
+    };
 
-} // namespace ModelLib
+} // namespace GridKit
 
-#endif // _MODEL_EVALUATOR_HPP_
+#endif // _SCALAR_TRAITS_HPP_

@@ -75,20 +75,20 @@ namespace AnalysisManager
 namespace Sundials
 {
 
-    template <typename ScalarT, typename T, typename I>
-    Ida<ScalarT, T, I>::Ida(ModelLib::ModelEvaluator<ScalarT, T, I>* model) : DynamicSolver<ScalarT, T, I>(model)
+    template <class ScalarT, typename IdxT>
+    Ida<ScalarT, IdxT>::Ida(ModelLib::ModelEvaluator<ScalarT, IdxT>* model) : DynamicSolver<ScalarT, IdxT>(model)
     {
         solver_ = IDACreate();
         tag_ = NULL;
     }
 
-    template <typename ScalarT, typename T, typename I>
-    Ida<ScalarT, T, I>::~Ida()
+    template <class ScalarT, typename IdxT>
+    Ida<ScalarT, IdxT>::~Ida()
     {
     }
 
-    template <typename ScalarT, typename T, typename I>
-    int Ida<ScalarT, T, I>::configureSimulation()
+    template <class ScalarT, typename IdxT>
+    int Ida<ScalarT, IdxT>::configureSimulation()
     {
         int retval = 0;
 
@@ -151,8 +151,8 @@ namespace Sundials
         return retval;
     }
 
-    template <typename ScalarT, typename T, typename I>
-    int Ida<ScalarT, T, I>::configureLinearSolver()
+    template <class ScalarT, typename IdxT>
+    int Ida<ScalarT, IdxT>::configureLinearSolver()
     {
         int retval = 0;
 
@@ -169,8 +169,8 @@ namespace Sundials
         return retval;
     }
 
-    template <typename ScalarT, typename T, typename I>
-    int Ida<ScalarT, T, I>::getDefaultInitialCondition()
+    template <class ScalarT, typename IdxT>
+    int Ida<ScalarT, IdxT>::getDefaultInitialCondition()
     {
         model_->initialize();
 
@@ -180,8 +180,8 @@ namespace Sundials
         return 0;
     }
 
-    template <typename ScalarT, typename T, typename I>
-    int Ida<ScalarT, T, I>::setIntegrationTime(T t_init, T t_final, int nout)
+    template <class ScalarT, typename IdxT>
+    int Ida<ScalarT, IdxT>::setIntegrationTime(real_type t_init, real_type t_final, int nout)
     {
         t_init_  = t_init;
         t_final_ = t_final;
@@ -189,8 +189,8 @@ namespace Sundials
         return 0;
     }
 
-    template <typename ScalarT, typename T, typename I>
-    int Ida<ScalarT, T, I>::initializeSimulation(T t0, bool findConsistent)
+    template <class ScalarT, typename IdxT>
+    int Ida<ScalarT, IdxT>::initializeSimulation(real_type t0, bool findConsistent)
     {
         int retval = 0;
 
@@ -213,14 +213,14 @@ namespace Sundials
         return retval;
     }
 
-    template <typename ScalarT, typename T, typename I>
-    int Ida<ScalarT, T, I>::runSimulation(T tf, int nout)
+    template <class ScalarT, typename IdxT>
+    int Ida<ScalarT, IdxT>::runSimulation(real_type tf, int nout)
     {
         int retval = 0;
         int iout = 0;
-        T tret;
-        T dt = tf/nout;
-        T tout = dt;
+        real_type tret;
+        real_type dt = tf/nout;
+        real_type tout = dt;
 
         /* In loop, call IDASolve, print results, and test for error.
          *     Break out of loop when NOUT preset output times have been reached. */
@@ -239,8 +239,8 @@ namespace Sundials
         return retval;
     }
 
-    template <typename ScalarT, typename T, typename I>
-    int Ida<ScalarT, T, I>::deleteSimulation()
+    template <class ScalarT, typename IdxT>
+    int Ida<ScalarT, IdxT>::deleteSimulation()
     {
         IDAFree(&solver_);
         SUNLinSolFree(linearSolver_);
@@ -250,8 +250,8 @@ namespace Sundials
     }
 
 
-    template <typename ScalarT, typename T, typename I>
-    int Ida<ScalarT, T, I>::configureQuadrature()
+    template <class ScalarT, typename IdxT>
+    int Ida<ScalarT, IdxT>::configureQuadrature()
     {
         int retval = 0;
 
@@ -264,7 +264,7 @@ namespace Sundials
         checkOutput(retval, "IDAQuadInit");
 
         // Set tolerances and error control for quadratures
-        T rtol, atol;
+        real_type rtol, atol;
         model_->setTolerances(rtol, atol);
 
         // Set tolerances for quadrature stricter than for integration
@@ -279,8 +279,8 @@ namespace Sundials
     }
 
 
-    template <typename ScalarT, typename T, typename I>
-    int Ida<ScalarT, T, I>::initializeQuadrature()
+    template <class ScalarT, typename IdxT>
+    int Ida<ScalarT, IdxT>::initializeQuadrature()
     {
         int retval = 0;
 
@@ -295,16 +295,16 @@ namespace Sundials
     }
 
 
-    template <typename ScalarT, typename T, typename I>
-    int Ida<ScalarT, T, I>::runSimulationQuadrature(T tf, int nout)
+    template <class ScalarT, typename IdxT>
+    int Ida<ScalarT, IdxT>::runSimulationQuadrature(real_type tf, int nout)
     {
         int retval = 0;
-        T tret;
+        real_type tret;
 
         //std::cout << "Forward integration for initial value problem ... \n";
 
-        T dt = tf/nout;
-        T tout = dt;
+        real_type dt = tf/nout;
+        real_type tout = dt;
         for(int i = 0; i < nout; ++i)
         {
             retval = IDASolve(solver_, tout, &tret, yy_, yp_, IDA_NORMAL);
@@ -323,8 +323,8 @@ namespace Sundials
     }
 
 
-    template <typename ScalarT, typename T, typename I>
-    int Ida<ScalarT, T, I>::deleteQuadrature()
+    template <class ScalarT, typename IdxT>
+    int Ida<ScalarT, IdxT>::deleteQuadrature()
     {
         IDAQuadFree(solver_);
         N_VDestroy(q_);
@@ -333,8 +333,8 @@ namespace Sundials
     }
 
 
-    template <typename ScalarT, typename T, typename I>
-    int Ida<ScalarT, T, I>::configureAdjoint()
+    template <class ScalarT, typename IdxT>
+    int Ida<ScalarT, IdxT>::configureAdjoint()
     {
         // Allocate adjoint vector, derivatives and quadrature
         yyB_ = N_VNew_Serial(model_->size());
@@ -349,8 +349,8 @@ namespace Sundials
         return 0;
     }
 
-    template <typename ScalarT, typename T, typename I>
-    int Ida<ScalarT, T, I>::initializeAdjoint(I steps)
+    template <class ScalarT, typename IdxT>
+    int Ida<ScalarT, IdxT>::initializeAdjoint(IdxT steps)
     {
         int retval = 0;
 
@@ -361,8 +361,8 @@ namespace Sundials
         return retval;
     }
 
-    template <typename ScalarT, typename T, typename I>
-    int Ida<ScalarT, T, I>::initializeBackwardSimulation(T tf)
+    template <class ScalarT, typename IdxT>
+    int Ida<ScalarT, IdxT>::initializeBackwardSimulation(real_type tf)
     {
         int retval = 0;
         realtype rtol;
@@ -419,8 +419,8 @@ namespace Sundials
         return retval;
     }
 
-    template <typename ScalarT, typename T, typename I>
-    int Ida<ScalarT, T, I>::configureLinearSolverBackward()
+    template <class ScalarT, typename IdxT>
+    int Ida<ScalarT, IdxT>::configureLinearSolverBackward()
     {
         int retval = 0;
 
@@ -439,17 +439,17 @@ namespace Sundials
         return retval;
     }
 
-    template <typename ScalarT, typename T, typename I>
-    int Ida<ScalarT, T, I>::runForwardSimulation(T tf, int nout)
+    template <class ScalarT, typename IdxT>
+    int Ida<ScalarT, IdxT>::runForwardSimulation(real_type tf, int nout)
     {
         int retval = 0;
         int ncheck;
-        T time;
+        real_type time;
 
         //std::cout << "Forward integration for adjoint analysis ... \n";
 
-        T dt = tf/nout;
-        T tout = dt;
+        real_type dt = tf/nout;
+        real_type tout = dt;
         for(int i = 0; i < nout; ++i)
         {
             retval = IDASolveF(solver_, tout, &time, yy_, yp_, IDA_NORMAL, &ncheck);
@@ -467,12 +467,12 @@ namespace Sundials
         return retval;
     }
 
-    template <typename ScalarT, typename T, typename I>
-    int Ida<ScalarT, T, I>::runBackwardSimulation(T t_init)
+    template <class ScalarT, typename IdxT>
+    int Ida<ScalarT, IdxT>::runBackwardSimulation(real_type t_init)
     {
         int retval = 0;
         long int nstB;
-        T time;
+        real_type time;
 
         //std::cout << "Backward integration for adjoint analysis ... ";
 
@@ -491,17 +491,17 @@ namespace Sundials
         return retval;
     }
 
-    template <typename ScalarT, typename T, typename I>
-    int Ida<ScalarT, T, I>::deleteAdjoint()
+    template <class ScalarT, typename IdxT>
+    int Ida<ScalarT, IdxT>::deleteAdjoint()
     {
         IDAAdjFree(solver_);
         return 0;
     }
 
-    template <typename ScalarT, typename T, typename I>
-    int Ida<ScalarT, T, I>::Residual(realtype tres, N_Vector yy, N_Vector yp, N_Vector rr, void *user_data)
+    template <class ScalarT, typename IdxT>
+    int Ida<ScalarT, IdxT>::Residual(realtype tres, N_Vector yy, N_Vector yp, N_Vector rr, void *user_data)
     {
-        ModelLib::ModelEvaluator<ScalarT, T, I>* model = static_cast<ModelLib::ModelEvaluator<ScalarT, T, I>*>(user_data);
+        ModelLib::ModelEvaluator<ScalarT, IdxT>* model = static_cast<ModelLib::ModelEvaluator<ScalarT, IdxT>*>(user_data);
 
         model->updateTime(tres, 0.0);
         copyVec(yy, model->y());
@@ -515,10 +515,10 @@ namespace Sundials
     }
 
 
-    template <typename ScalarT, typename T, typename I>
-    int Ida<ScalarT, T, I>::Integrand(realtype tt, N_Vector yy, N_Vector yp, N_Vector rhsQ, void *user_data)
+    template <class ScalarT, typename IdxT>
+    int Ida<ScalarT, IdxT>::Integrand(realtype tt, N_Vector yy, N_Vector yp, N_Vector rhsQ, void *user_data)
     {
-        ModelLib::ModelEvaluator<ScalarT, T, I>* model = static_cast<ModelLib::ModelEvaluator<ScalarT, T, I>*>(user_data);
+        ModelLib::ModelEvaluator<ScalarT, IdxT>* model = static_cast<ModelLib::ModelEvaluator<ScalarT, IdxT>*>(user_data);
 
         model->updateTime(tt, 0.0);
         copyVec(yy, model->y());
@@ -531,10 +531,10 @@ namespace Sundials
         return 0;
     }
 
-    template <typename ScalarT, typename T, typename I>
-    int Ida<ScalarT, T, I>::adjointResidual(realtype tt, N_Vector yy, N_Vector yp, N_Vector yyB, N_Vector ypB, N_Vector rrB, void *user_data)
+    template <class ScalarT, typename IdxT>
+    int Ida<ScalarT, IdxT>::adjointResidual(realtype tt, N_Vector yy, N_Vector yp, N_Vector yyB, N_Vector ypB, N_Vector rrB, void *user_data)
     {
-        ModelLib::ModelEvaluator<ScalarT, T, I>* model = static_cast<ModelLib::ModelEvaluator<ScalarT, T, I>*>(user_data);
+        ModelLib::ModelEvaluator<ScalarT, IdxT>* model = static_cast<ModelLib::ModelEvaluator<ScalarT, IdxT>*>(user_data);
 
         model->updateTime(tt, 0.0);
         copyVec(yy, model->y());
@@ -550,10 +550,10 @@ namespace Sundials
     }
 
 
-    template <typename ScalarT, typename T, typename I>
-    int Ida<ScalarT, T, I>::adjointIntegrand(realtype tt, N_Vector yy, N_Vector yp, N_Vector yyB, N_Vector ypB, N_Vector rhsQB, void *user_data)
+    template <class ScalarT, typename IdxT>
+    int Ida<ScalarT, IdxT>::adjointIntegrand(realtype tt, N_Vector yy, N_Vector yp, N_Vector yyB, N_Vector ypB, N_Vector rhsQB, void *user_data)
     {
-        ModelLib::ModelEvaluator<ScalarT, T, I>* model = static_cast<ModelLib::ModelEvaluator<ScalarT, T, I>*>(user_data);
+        ModelLib::ModelEvaluator<ScalarT, IdxT>* model = static_cast<ModelLib::ModelEvaluator<ScalarT, IdxT>*>(user_data);
 
         model->updateTime(tt, 0.0);
         copyVec(yy, model->y());
@@ -569,8 +569,8 @@ namespace Sundials
     }
 
 
-    template <typename ScalarT, typename T, typename I>
-    void Ida<ScalarT, T, I>::copyVec(const N_Vector x, std::vector< ScalarT >& y)
+    template <class ScalarT, typename IdxT>
+    void Ida<ScalarT, IdxT>::copyVec(const N_Vector x, std::vector< ScalarT >& y)
     {
         const ScalarT* xdata = NV_DATA_S(x);
         for(unsigned int i = 0; i < y.size(); ++i)
@@ -580,8 +580,8 @@ namespace Sundials
     }
 
 
-    template <typename ScalarT, typename T, typename I>
-    void Ida<ScalarT, T, I>::copyVec(const std::vector< ScalarT >& x, N_Vector y)
+    template <class ScalarT, typename IdxT>
+    void Ida<ScalarT, IdxT>::copyVec(const std::vector< ScalarT >& x, N_Vector y)
     {
         ScalarT* ydata = NV_DATA_S(y);
         for(unsigned int i = 0; i < x.size(); ++i)
@@ -590,8 +590,8 @@ namespace Sundials
         }
     }
 
-    template <typename ScalarT, typename T, typename I>
-    void Ida<ScalarT, T, I>::copyVec(const std::vector< bool >& x, N_Vector y)
+    template <class ScalarT, typename IdxT>
+    void Ida<ScalarT, IdxT>::copyVec(const std::vector< bool >& x, N_Vector y)
     {
         ScalarT* ydata = NV_DATA_S(y);
         for(unsigned int i = 0; i < x.size(); ++i)
@@ -604,21 +604,21 @@ namespace Sundials
     }
 
 
-    template <typename ScalarT, typename T, typename I>
-    void Ida<ScalarT, T, I>::printOutput(realtype t)
+    template <class ScalarT, typename IdxT>
+    void Ida<ScalarT, IdxT>::printOutput(realtype t)
     {
         realtype *yval = N_VGetArrayPointer_Serial(yy_);
 
         std::cout << std::setprecision(5) << std::setw(7) << t << " ";
-        for (I i = 0; i < model_->size(); ++i)
+        for (IdxT i = 0; i < model_->size(); ++i)
         {
             std::cout << yval[i] << " ";
         }
         std::cout << "\n";
     }
 
-    template <typename ScalarT, typename T, typename I>
-    void Ida<ScalarT, T, I>::printFinalStats()
+    template <class ScalarT, typename IdxT>
+    void Ida<ScalarT, IdxT>::printFinalStats()
     {
         int retval = 0;
         void* mem = solver_;
@@ -652,8 +652,8 @@ namespace Sundials
     }
 
 
-    template <typename ScalarT, typename T, typename I>
-    void Ida<ScalarT, T, I>::checkAllocation(void* v, const char* functionName)
+    template <class ScalarT, typename IdxT>
+    void Ida<ScalarT, IdxT>::checkAllocation(void* v, const char* functionName)
     {
         if (v == NULL)
         {
@@ -662,8 +662,8 @@ namespace Sundials
         }
     }
 
-    template <typename ScalarT, typename T, typename I>
-    void Ida<ScalarT, T, I>::checkOutput(int retval, const char* functionName)
+    template <class ScalarT, typename IdxT>
+    void Ida<ScalarT, IdxT>::checkOutput(int retval, const char* functionName)
     {
         if (retval < 0)
         {
@@ -673,9 +673,9 @@ namespace Sundials
     }
 
     // Compiler will prevent building modules with data type incompatible with realtype
-    template class Ida<realtype, realtype, long int>;
-    template class Ida<realtype, realtype, int>;
-    template class Ida<realtype, realtype, size_t>;
+    template class Ida<realtype, long int>;
+    template class Ida<realtype, int>;
+    template class Ida<realtype, size_t>;
 
 } // namespace Sundials
 } // namespace AnalysisManager

@@ -82,13 +82,13 @@ int main()
     using namespace AnalysisManager;
 
     // Create an infinite bus
-    Bus<double, double, size_t>* bus = new Bus<double, double, size_t>(1.0, 0.0, 0.8, 0.3);
+    Bus<double, size_t>* bus = new Bus<double, size_t>(1.0, 0.0, 0.8, 0.3);
 
     // Attach a generator to that bus
-    ModelEvaluator<double, double, size_t>* model = new Generator4<double, double, size_t>(bus);
+    ModelEvaluator<double, size_t>* model = new Generator4<double, size_t>(bus);
 
     // Create numerical integrator and configure it for the generator model
-    Ida<double, double, size_t>* idas = new Ida<double, double, size_t>(model);
+    Ida<double, size_t>* idas = new Ida<double, size_t>(model);
 
     model->allocate();
 
@@ -109,7 +109,7 @@ int main()
 
     // create initial condition after a fault
     {
-        Generator4<double, double, size_t>* gen = dynamic_cast<Generator4<double, double, size_t>*>(model);
+        Generator4<double, size_t>* gen = dynamic_cast<Generator4<double, size_t>*>(model);
         gen->V() = 0.0;
         idas->runSimulationQuadrature(3.0, 20);
         gen->V() = 1.0;

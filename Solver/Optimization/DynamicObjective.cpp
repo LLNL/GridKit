@@ -66,9 +66,9 @@
 namespace AnalysisManager {
 namespace IpoptInterface {
 
-template <typename ScalarT, typename T, typename I>
-DynamicObjective<ScalarT, T, I>::DynamicObjective(Sundials::Ida<ScalarT, T, I>* integrator)
-  : OptimizationSolver<ScalarT, T, I>(integrator),
+template <class ScalarT, typename IdxT>
+DynamicObjective<ScalarT, IdxT>::DynamicObjective(Sundials::Ida<ScalarT, IdxT>* integrator)
+  : OptimizationSolver<ScalarT, IdxT>(integrator),
     t_init_(integrator_->getInitialTime()),
     t_final_(integrator_->getFinalTime()),
     nout_(integrator_->getNumberOutputTimes())
@@ -76,14 +76,14 @@ DynamicObjective<ScalarT, T, I>::DynamicObjective(Sundials::Ida<ScalarT, T, I>* 
     model_ =  integrator_->getModel();
 }
 
-template <typename ScalarT, typename T, typename I>
-DynamicObjective<ScalarT, T, I>::~DynamicObjective()
+template <class ScalarT, typename IdxT>
+DynamicObjective<ScalarT, IdxT>::~DynamicObjective()
 {
 }
 
 
-template <typename ScalarT, typename T, typename I>
-bool DynamicObjective<ScalarT, T, I>::get_nlp_info(Index& n, Index& m, Index& nnz_jac_g,
+template <class ScalarT, typename IdxT>
+bool DynamicObjective<ScalarT, IdxT>::get_nlp_info(Index& n, Index& m, Index& nnz_jac_g,
                                                    Index& nnz_h_lag, IndexStyleEnum& index_style)
 {
     // The optimization problem has one variable. For  now this is
@@ -106,8 +106,8 @@ bool DynamicObjective<ScalarT, T, I>::get_nlp_info(Index& n, Index& m, Index& nn
 }
 
 
-template <typename ScalarT, typename T, typename I>
-bool DynamicObjective<ScalarT, T, I>::get_bounds_info(Index n, Number* x_l, Number* x_u,
+template <class ScalarT, typename IdxT>
+bool DynamicObjective<ScalarT, IdxT>::get_bounds_info(Index n, Number* x_l, Number* x_u,
                                                       Index m, Number* g_l, Number* g_u)
 {
     // Check if sizes are set correctly
@@ -115,7 +115,7 @@ bool DynamicObjective<ScalarT, T, I>::get_bounds_info(Index n, Number* x_l, Numb
     assert(m == 0);
 
     // Get boundaries for the optimization parameters
-    for(I i = 0; i < model_->size_opt(); ++i)
+    for(IdxT i = 0; i < model_->size_opt(); ++i)
     {
         x_l[i] = model_->param_lo()[i];
         x_u[i] = model_->param_up()[i];
@@ -125,8 +125,8 @@ bool DynamicObjective<ScalarT, T, I>::get_bounds_info(Index n, Number* x_l, Numb
 }
 
 
-template <typename ScalarT, typename T, typename I>
-bool DynamicObjective<ScalarT, T, I>::get_starting_point(Index n, bool init_x, Number* x,
+template <class ScalarT, typename IdxT>
+bool DynamicObjective<ScalarT, IdxT>::get_starting_point(Index n, bool init_x, Number* x,
                                                          bool init_z, Number* z_L, Number* z_U,
                                                          Index m, bool init_lambda,
                                                          Number* lambda)
@@ -144,11 +144,11 @@ bool DynamicObjective<ScalarT, T, I>::get_starting_point(Index n, bool init_x, N
 }
 
 
-template <typename ScalarT, typename T, typename I>
-bool DynamicObjective<ScalarT, T, I>::eval_f(Index n, const Number* x, bool new_x, Number& obj_value)
+template <class ScalarT, typename IdxT>
+bool DynamicObjective<ScalarT, IdxT>::eval_f(Index n, const Number* x, bool new_x, Number& obj_value)
 {
     // Update optimization parameters
-    for(I i = 0; i < model_->size_opt(); ++i)
+    for(IdxT i = 0; i < model_->size_opt(); ++i)
         model_->param()[i] = x[i];
 
     // Evaluate objective function
@@ -164,11 +164,11 @@ bool DynamicObjective<ScalarT, T, I>::eval_f(Index n, const Number* x, bool new_
 }
 
 
-template <typename ScalarT, typename T, typename I>
-bool DynamicObjective<ScalarT, T, I>::eval_grad_f(Index n, const Number* x, bool new_x, Number* grad_f)
+template <class ScalarT, typename IdxT>
+bool DynamicObjective<ScalarT, IdxT>::eval_grad_f(Index n, const Number* x, bool new_x, Number* grad_f)
 {
     // Update optimization parameters
-    for(I i = 0; i < model_->size_opt(); ++i)
+    for(IdxT i = 0; i < model_->size_opt(); ++i)
         model_->param()[i] = x[i];
 
     // evaluate the gradient of the objective function grad_{x} f(x)
@@ -185,7 +185,7 @@ bool DynamicObjective<ScalarT, T, I>::eval_grad_f(Index n, const Number* x, bool
     integrator_->runBackwardSimulation(t_init_);
 
     // For now assumes only one forward integrand and multiple optimization parameters.
-    for(I i = 0; i < model_->size_opt(); ++i)
+    for(IdxT i = 0; i < model_->size_opt(); ++i)
         grad_f[i] = -((integrator_->getAdjointIntegral())[i]);
 
     integrator_->deleteAdjoint();
@@ -194,15 +194,15 @@ bool DynamicObjective<ScalarT, T, I>::eval_grad_f(Index n, const Number* x, bool
 }
 
 
-template <typename ScalarT, typename T, typename I>
-bool DynamicObjective<ScalarT, T, I>::eval_g(Index n, const Number* x, bool new_x, Index m, Number* g)
+template <class ScalarT, typename IdxT>
+bool DynamicObjective<ScalarT, IdxT>::eval_g(Index n, const Number* x, bool new_x, Index m, Number* g)
 {
     return false;
 }
 
 
-template <typename ScalarT, typename T, typename I>
-bool DynamicObjective<ScalarT, T, I>::eval_jac_g(Index n, const Number* x, bool new_x,
+template <class ScalarT, typename IdxT>
+bool DynamicObjective<ScalarT, IdxT>::eval_jac_g(Index n, const Number* x, bool new_x,
                                                  Index m, Index nele_jac, Index* iRow, Index *jCol,
                                                  Number* values)
 {
@@ -210,8 +210,8 @@ bool DynamicObjective<ScalarT, T, I>::eval_jac_g(Index n, const Number* x, bool 
 }
 
 
-template <typename ScalarT, typename T, typename I>
-bool DynamicObjective<ScalarT, T, I>::eval_h(Index n, const Number* x, bool new_x,
+template <class ScalarT, typename IdxT>
+bool DynamicObjective<ScalarT, IdxT>::eval_h(Index n, const Number* x, bool new_x,
                                              Number obj_factor, Index m, const Number* lambda,
                                              bool new_lambda, Index nele_hess, Index* iRow,
                                              Index* jCol, Number* values)
@@ -220,8 +220,8 @@ bool DynamicObjective<ScalarT, T, I>::eval_h(Index n, const Number* x, bool new_
 }
 
 
-template <typename ScalarT, typename T, typename I>
-void DynamicObjective<ScalarT, T, I>::finalize_solution(SolverReturn status,
+template <class ScalarT, typename IdxT>
+void DynamicObjective<ScalarT, IdxT>::finalize_solution(SolverReturn status,
                                                         Index n, const Number* x, const Number* z_L, const Number* z_U,
                                                         Index m, const Number* g, const Number* lambda,
                                                         Number obj_value,
@@ -234,8 +234,8 @@ void DynamicObjective<ScalarT, T, I>::finalize_solution(SolverReturn status,
 
 
 
-template class DynamicObjective<Ipopt::Number, Ipopt::Number, Ipopt::Index>;
-template class DynamicObjective<Ipopt::Number, Ipopt::Number, std::size_t>;
+template class DynamicObjective<Ipopt::Number, Ipopt::Index>;
+template class DynamicObjective<Ipopt::Number, std::size_t>;
 
 } // namespace IpoptInterface
 } // namespace AnalysisManager

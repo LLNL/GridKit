@@ -77,8 +77,8 @@ int main()
     using namespace AnalysisManager::Sundials;
     using namespace AnalysisManager;
 
-    ModelEvaluator<double, double, size_t>* model = new Generator2<double, double, size_t>();
-    Ida<double, double, size_t>* idas = new Ida<double, double, size_t>(model);
+    ModelEvaluator<double, size_t>* model = new Generator2<double, size_t>();
+    Ida<double, size_t>* idas = new Ida<double, size_t>(model);
 
     model->allocate();
 
@@ -98,8 +98,8 @@ int main()
     idas->runSimulation(t_fault);
     // create initial condition after a fault
     {
-        Generator2<double, double, size_t>* gen2 =
-            dynamic_cast<Generator2<double, double, size_t>*>(model);
+        Generator2<double, size_t>* gen2 =
+            dynamic_cast<Generator2<double, size_t>*>(model);
         gen2->shortCircuit();
         idas->runSimulation(t_clear, 2);
         gen2->restore();
@@ -127,7 +127,7 @@ int main()
 
     // Create dynamic objective interface to Ipopt solver
     Ipopt::SmartPtr<Ipopt::TNLP> ipoptDynamicObjectiveInterface =
-        new IpoptInterface::DynamicObjective<double, double, size_t>(idas);
+        new IpoptInterface::DynamicObjective<double, size_t>(idas);
 
     // Solve the problem
     status = ipoptApp->OptimizeTNLP(ipoptDynamicObjectiveInterface);
@@ -144,7 +144,7 @@ int main()
 
     // Create dynamic constraint interface to Ipopt solver
     Ipopt::SmartPtr<Ipopt::TNLP> ipoptDynamicConstraintInterface =
-        new IpoptInterface::DynamicConstraint<double, double, size_t>(idas);
+        new IpoptInterface::DynamicConstraint<double, size_t>(idas);
 
     // Solve the problem
     status = ipoptApp->OptimizeTNLP(ipoptDynamicConstraintInterface);

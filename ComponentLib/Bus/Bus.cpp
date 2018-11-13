@@ -71,9 +71,9 @@ namespace ModelLib {
  * - Number of quadratures = 0
  * - Number of optimization parameters = 0
  */
-template <class ScalarT, typename T, typename I>
-Bus<ScalarT, T, I>::Bus()
-  : ModelEvaluatorImpl<ScalarT, T, I>(0, 0, 0),
+template <class ScalarT, typename IdxT>
+Bus<ScalarT, IdxT>::Bus()
+  : ModelEvaluatorImpl<ScalarT, IdxT>(0, 0, 0),
     V_(1.0),
     theta_(0.0),
     P_(1.0),
@@ -90,9 +90,9 @@ Bus<ScalarT, T, I>::Bus()
  * - Number of quadratures = 0
  * - Number of optimization parameters = 0
  */
-template <class ScalarT, typename T, typename I>
-Bus<ScalarT, T, I>::Bus(ScalarT V, ScalarT theta, ScalarT P, ScalarT Q)
-  : ModelEvaluatorImpl<ScalarT, T, I>(0, 0, 0),
+template <class ScalarT, typename IdxT>
+Bus<ScalarT, IdxT>::Bus(ScalarT V, ScalarT theta, ScalarT P, ScalarT Q)
+  : ModelEvaluatorImpl<ScalarT, IdxT>(0, 0, 0),
     V_(V),
     theta_(theta),
     P_(P),
@@ -101,8 +101,8 @@ Bus<ScalarT, T, I>::Bus(ScalarT V, ScalarT theta, ScalarT P, ScalarT Q)
     //std::cout << "Create Bus..." << std::endl;
 }
 
-template <class ScalarT, typename T, typename I>
-Bus<ScalarT, T, I>::~Bus()
+template <class ScalarT, typename IdxT>
+Bus<ScalarT, IdxT>::~Bus()
 {
     //std::cout << "Destroy Bus..." << std::endl;
 }
@@ -110,64 +110,64 @@ Bus<ScalarT, T, I>::~Bus()
 /*!
  * @brief allocate method computes sparsity pattern of the Jacobian.
  */
-template <class ScalarT, typename T, typename I>
-int Bus<ScalarT, T, I>::allocate()
+template <class ScalarT, typename IdxT>
+int Bus<ScalarT, IdxT>::allocate()
 {
     //std::cout << "Allocate Bus..." << std::endl;
     return 0;
 }
 
-template <class ScalarT, typename T, typename I>
-int Bus<ScalarT, T, I>::initialize()
+template <class ScalarT, typename IdxT>
+int Bus<ScalarT, IdxT>::initialize()
 {
     // std::cout << "Initialize Bus..." << std::endl;
     return 0;
 }
 
-template <class ScalarT, typename T, typename I>
-int Bus<ScalarT, T, I>::evaluateResidual()
+template <class ScalarT, typename IdxT>
+int Bus<ScalarT, IdxT>::evaluateResidual()
 {
     // std::cout << "Evaluate residual for Bus..." << std::endl;
     return 0;
 }
 
-template <class ScalarT, typename T, typename I>
-int Bus<ScalarT, T, I>::evaluateJacobian()
+template <class ScalarT, typename IdxT>
+int Bus<ScalarT, IdxT>::evaluateJacobian()
 {
     return 0;
 }
 
-template <class ScalarT, typename T, typename I>
-int Bus<ScalarT, T, I>::evaluateIntegrand()
+template <class ScalarT, typename IdxT>
+int Bus<ScalarT, IdxT>::evaluateIntegrand()
 {
     // std::cout << "Evaluate Integrand for Bus..." << std::endl;
     return 0;
 }
 
-template <class ScalarT, typename T, typename I>
-int Bus<ScalarT, T, I>::initializeAdjoint()
+template <class ScalarT, typename IdxT>
+int Bus<ScalarT, IdxT>::initializeAdjoint()
 {
     //std::cout << "Initialize adjoint for Bus..." << std::endl;
     return 0;
 }
 
-template <class ScalarT, typename T, typename I>
-int Bus<ScalarT, T, I>::evaluateAdjointResidual()
+template <class ScalarT, typename IdxT>
+int Bus<ScalarT, IdxT>::evaluateAdjointResidual()
 {
     // std::cout << "Evaluate adjoint residual for Bus..." << std::endl;
     return 0;
 }
 
-// template <class ScalarT, typename T, typename I>
-// int Bus<ScalarT, T, I>::evaluateAdjointJacobian()
+// template <class ScalarT, typename IdxT>
+// int Bus<ScalarT, IdxT>::evaluateAdjointJacobian()
 // {
 //     std::cout << "Evaluate adjoint Jacobian for Bus..." << std::endl;
 //     std::cout << "Adjoint Jacobian evaluation not implemented!" << std::endl;
 //     return 0;
 // }
 
-template <class ScalarT, typename T, typename I>
-int Bus<ScalarT, T, I>::evaluateAdjointIntegrand()
+template <class ScalarT, typename IdxT>
+int Bus<ScalarT, IdxT>::evaluateAdjointIntegrand()
 {
     // std::cout << "Evaluate adjoint Integrand for Bus..." << std::endl;
     return 0;
@@ -176,8 +176,8 @@ int Bus<ScalarT, T, I>::evaluateAdjointIntegrand()
 
 
 // Available template instantiations
-template class Bus<double, double, long int>;
-template class Bus<double, double, size_t>;
+template class Bus<double, long int>;
+template class Bus<double, size_t>;
 
 
 } // namespace ModelLib

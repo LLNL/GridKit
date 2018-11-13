@@ -65,22 +65,22 @@
 
 namespace AnalysisManager
 {
-    template <class ScalarT, typename T, typename I>
+    template <class ScalarT, typename IdxT>
     class DynamicSolver
     {
     public:
-        DynamicSolver(ModelLib::ModelEvaluator<ScalarT, T, I>* model) : model_(model)
+        DynamicSolver(ModelLib::ModelEvaluator<ScalarT, IdxT>* model) : model_(model)
         {
         }
         virtual ~DynamicSolver(){}
         
-        ModelLib::ModelEvaluator<ScalarT, T, I>* getModel()
+        ModelLib::ModelEvaluator<ScalarT, IdxT>* getModel()
         {
             return model_;
         }
         
     protected:
-        ModelLib::ModelEvaluator<ScalarT, T, I>* model_;
+        ModelLib::ModelEvaluator<ScalarT, IdxT>* model_;
     };
 
 }

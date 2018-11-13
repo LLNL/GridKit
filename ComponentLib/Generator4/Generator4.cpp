@@ -73,9 +73,9 @@ namespace ModelLib {
  * - Number of quadratures = 1
  * - Number of optimization parameters = 2
  */
-template <class ScalarT, typename T, typename I>
-Generator4<ScalarT, T, I>::Generator4(Bus<ScalarT, T, I>* bus)
-  : ModelEvaluatorImpl<ScalarT, T, I>(6, 1, 2),
+template <class ScalarT, typename IdxT>
+Generator4<ScalarT, IdxT>::Generator4(Bus<ScalarT, IdxT>* bus)
+  : ModelEvaluatorImpl<ScalarT, IdxT>(6, 1, 2),
     H_(5.0),
     D_(0.04),
     Xq_(0.85),
@@ -100,8 +100,8 @@ Generator4<ScalarT, T, I>::Generator4(Bus<ScalarT, T, I>* bus)
     atol_ = 1.0e-9;
 }
 
-template <class ScalarT, typename T, typename I>
-Generator4<ScalarT, T, I>::~Generator4()
+template <class ScalarT, typename IdxT>
+Generator4<ScalarT, IdxT>::~Generator4()
 {
 }
 
@@ -109,8 +109,8 @@ Generator4<ScalarT, T, I>::~Generator4()
  * @brief This function will be used to allocate sparse Jacobian matrices.
  *
  */
-template <class ScalarT, typename T, typename I>
-int Generator4<ScalarT, T, I>::allocate()
+template <class ScalarT, typename IdxT>
+int Generator4<ScalarT, IdxT>::allocate()
 {
     //std::cout << "Allocate Generator4..." << std::endl;
     tag_.resize(size_);
@@ -122,8 +122,8 @@ int Generator4<ScalarT, T, I>::allocate()
  * Initialization of the generator model
  *
  */
-template <class ScalarT, typename T, typename I>
-int Generator4<ScalarT, T, I>::initialize()
+template <class ScalarT, typename IdxT>
+int Generator4<ScalarT, IdxT>::initialize()
 {
     // std::cout << "Initialize Generator4..." << std::endl;
 
@@ -170,15 +170,15 @@ int Generator4<ScalarT, T, I>::initialize()
 /**
  * \brief Identify differential variables.
  */
-template <class ScalarT, typename T, typename I>
-int Generator4<ScalarT, T, I>::tagDifferentiable()
+template <class ScalarT, typename IdxT>
+int Generator4<ScalarT, IdxT>::tagDifferentiable()
 {
     tag_[0] = true;
     tag_[1] = true;
     tag_[2] = true;
     tag_[3] = true;
 
-    for (I i=4; i < size_; ++i)
+    for (IdxT i=4; i < size_; ++i)
     {
         tag_[i] = false;
     }
@@ -186,8 +186,8 @@ int Generator4<ScalarT, T, I>::tagDifferentiable()
     return 0;
 }
 
-template <class ScalarT, typename T, typename I>
-int Generator4<ScalarT, T, I>::evaluateResidual()
+template <class ScalarT, typename IdxT>
+int Generator4<ScalarT, IdxT>::evaluateResidual()
 {
     // std::cout << "Evaluate residual for Generator4..." << std::endl;
 
@@ -204,27 +204,27 @@ int Generator4<ScalarT, T, I>::evaluateResidual()
     return 0;
 }
 
-template <class ScalarT, typename T, typename I>
-int Generator4<ScalarT, T, I>::evaluateJacobian()
+template <class ScalarT, typename IdxT>
+int Generator4<ScalarT, IdxT>::evaluateJacobian()
 {
     std::cout << "Evaluate Jacobian for Generator4..." << std::endl;
     std::cout << "Jacobian evaluation not implemented!" << std::endl;
     return 0;
 }
 
-template <class ScalarT, typename T, typename I>
-int Generator4<ScalarT, T, I>::evaluateIntegrand()
+template <class ScalarT, typename IdxT>
+int Generator4<ScalarT, IdxT>::evaluateIntegrand()
 {
     // std::cout << "Evaluate Integrand for Generator4..." << std::endl;
     g_[0] = frequencyPenalty(y_[1]);
     return 0;
 }
 
-template <class ScalarT, typename T, typename I>
-int Generator4<ScalarT, T, I>::initializeAdjoint()
+template <class ScalarT, typename IdxT>
+int Generator4<ScalarT, IdxT>::initializeAdjoint()
 {
     //std::cout << "Initialize adjoint for Generator4..." << std::endl;
-    for (I i=0; i<size_; ++i)
+    for (IdxT i=0; i<size_; ++i)
     {
         yB_[i] = 0.0;
         ypB_[i] = 0.0;
@@ -234,8 +234,8 @@ int Generator4<ScalarT, T, I>::initializeAdjoint()
     return 0;
 }
 
-template <class ScalarT, typename T, typename I>
-int Generator4<ScalarT, T, I>::evaluateAdjointResidual()
+template <class ScalarT, typename IdxT>
+int Generator4<ScalarT, IdxT>::evaluateAdjointResidual()
 {
     // std::cout << "Evaluate adjoint residual for Generator4..." << std::endl;
     fB_[0] = -ypB_[0] + yB_[4]*V()*cos(theta() - y_[0]) - yB_[5]*V()*sin(theta() - y_[0]);
@@ -247,16 +247,16 @@ int Generator4<ScalarT, T, I>::evaluateAdjointResidual()
     return 0;
 }
 
-// template <class ScalarT, typename T, typename I>
-// int Generator4<ScalarT, T, I>::evaluateAdjointJacobian()
+// template <class ScalarT, typename IdxT>
+// int Generator4<ScalarT, IdxT>::evaluateAdjointJacobian()
 // {
 //     std::cout << "Evaluate adjoint Jacobian for Generator4..." << std::endl;
 //     std::cout << "Adjoint Jacobian evaluation not implemented!" << std::endl;
 //     return 0;
 // }
 
-template <class ScalarT, typename T, typename I>
-int Generator4<ScalarT, T, I>::evaluateAdjointIntegrand()
+template <class ScalarT, typename IdxT>
+int Generator4<ScalarT, IdxT>::evaluateAdjointIntegrand()
 {
     // std::cout << "Evaluate adjoint Integrand for Generator4..." << std::endl;
     gB_[0] = -omega_s_/(2.0*H_) * yB_[1];
@@ -267,50 +267,50 @@ int Generator4<ScalarT, T, I>::evaluateAdjointIntegrand()
 
 
 
-template <class ScalarT, typename T, typename I>
-ScalarT& Generator4<ScalarT, T, I>::V()
+template <class ScalarT, typename IdxT>
+ScalarT& Generator4<ScalarT, IdxT>::V()
 {
     return bus_->V();
 }
 
-template <class ScalarT, typename T, typename I>
-const ScalarT& Generator4<ScalarT, T, I>::V() const
+template <class ScalarT, typename IdxT>
+const ScalarT& Generator4<ScalarT, IdxT>::V() const
 {
     return bus_->V();
 }
 
-template <class ScalarT, typename T, typename I>
-ScalarT& Generator4<ScalarT, T, I>::theta()
+template <class ScalarT, typename IdxT>
+ScalarT& Generator4<ScalarT, IdxT>::theta()
 {
     return bus_->theta();
 }
 
-template <class ScalarT, typename T, typename I>
-const ScalarT& Generator4<ScalarT, T, I>::theta() const
+template <class ScalarT, typename IdxT>
+const ScalarT& Generator4<ScalarT, IdxT>::theta() const
 {
     return bus_->theta();
 }
 
-template <class ScalarT, typename T, typename I>
-ScalarT& Generator4<ScalarT, T, I>::P()
+template <class ScalarT, typename IdxT>
+ScalarT& Generator4<ScalarT, IdxT>::P()
 {
     return bus_->P();
 }
 
-template <class ScalarT, typename T, typename I>
-const ScalarT& Generator4<ScalarT, T, I>::P() const
+template <class ScalarT, typename IdxT>
+const ScalarT& Generator4<ScalarT, IdxT>::P() const
 {
     return bus_->P();
 }
 
-template <class ScalarT, typename T, typename I>
-ScalarT& Generator4<ScalarT, T, I>::Q()
+template <class ScalarT, typename IdxT>
+ScalarT& Generator4<ScalarT, IdxT>::Q()
 {
     return bus_->Q();
 }
 
-template <class ScalarT, typename T, typename I>
-const ScalarT& Generator4<ScalarT, T, I>::Q() const
+template <class ScalarT, typename IdxT>
+const ScalarT& Generator4<ScalarT, IdxT>::Q() const
 {
     return bus_->Q();
 }
@@ -325,8 +325,8 @@ const ScalarT& Generator4<ScalarT, T, I>::Q() const
 /**
  * Generator active power Pg.
  */
-template <class ScalarT, typename T, typename I>
-ScalarT Generator4<ScalarT, T, I>::Pg()
+template <class ScalarT, typename IdxT>
+ScalarT Generator4<ScalarT, IdxT>::Pg()
 {
     return y_[5]*V()*cos(theta() - y_[0]) + y_[4]*V()*sin(theta() - y_[0]);
 }
@@ -334,8 +334,8 @@ ScalarT Generator4<ScalarT, T, I>::Pg()
 /**
  * Generator reactive power Qg.
  */
-template <class ScalarT, typename T, typename I>
-ScalarT Generator4<ScalarT, T, I>::Qg()
+template <class ScalarT, typename IdxT>
+ScalarT Generator4<ScalarT, IdxT>::Qg()
 {
     return y_[5]*V()*sin(theta() - y_[0]) - y_[4]*V()*cos(theta() - y_[0]);
 }
@@ -343,8 +343,8 @@ ScalarT Generator4<ScalarT, T, I>::Qg()
 /**
  * Frequency penalty is used as the objective function for the generator model.
  */
-template <class ScalarT, typename T, typename I>
-ScalarT Generator4<ScalarT, T, I>::frequencyPenalty(ScalarT omega)
+template <class ScalarT, typename IdxT>
+ScalarT Generator4<ScalarT, IdxT>::frequencyPenalty(ScalarT omega)
 {
     return c_ * pow(std::max(0.0, std::max(omega - omega_up_, omega_lo_ - omega)), beta_);
 }
@@ -353,8 +353,8 @@ ScalarT Generator4<ScalarT, T, I>::frequencyPenalty(ScalarT omega)
  * Derivative of frequency penalty cannot be written in terms of min/max functions.
  * Need to expand conditional statements instead.
  */
-template <class ScalarT, typename T, typename I>
-ScalarT Generator4<ScalarT, T, I>::frequencyPenaltyDer(ScalarT omega)
+template <class ScalarT, typename IdxT>
+ScalarT Generator4<ScalarT, IdxT>::frequencyPenaltyDer(ScalarT omega)
 {
     if (omega > omega_up_)
     {
@@ -373,8 +373,8 @@ ScalarT Generator4<ScalarT, T, I>::frequencyPenaltyDer(ScalarT omega)
 
 
 // Available template instantiations
-template class Generator4<double, double, long int>;
-template class Generator4<double, double, size_t>;
+template class Generator4<double, long int>;
+template class Generator4<double, size_t>;
 
 
 } // namespace ModelLib
