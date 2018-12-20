@@ -142,11 +142,11 @@ namespace Sundials
         JacobianMat_ = SUNDenseMatrix(model_->size(), model_->size());
         checkAllocation((void*) JacobianMat_, "SUNDenseMatrix");
 
-        linearSolver_ = SUNDenseLinearSolver(yy_, JacobianMat_);
-        checkAllocation((void*) linearSolver_, "SUNDenseLinearSolver");
+        linearSolver_ = SUNLinSol_Dense(yy_, JacobianMat_);
+        checkAllocation((void*) linearSolver_, "SUNLinSol_Dense");
 
-        retval = IDADlsSetLinearSolver(solver_, linearSolver_, JacobianMat_);
-        checkOutput(retval, "IDADlsSetLinearSolver");
+        retval = IDASetLinearSolver(solver_, linearSolver_, JacobianMat_);
+        checkOutput(retval, "IDASetLinearSolver");
 
         return retval;
     }
@@ -160,11 +160,11 @@ namespace Sundials
         JacobianMat_ = SUNDenseMatrix(model_->size(), model_->size());
         checkAllocation((void*) JacobianMat_, "SUNDenseMatrix");
 
-        linearSolver_ = SUNDenseLinearSolver(yy_, JacobianMat_);
-        checkAllocation((void*) linearSolver_, "SUNDenseLinearSolver");
+        linearSolver_ = SUNLinSol_Dense(yy_, JacobianMat_);
+        checkAllocation((void*) linearSolver_, "SUNLinSol_Dense");
 
-        retval = IDADlsSetLinearSolver(solver_, linearSolver_, JacobianMat_);
-        checkOutput(retval, "IDADlsSetLinearSolver");
+        retval = IDASetLinearSolver(solver_, linearSolver_, JacobianMat_);
+        checkOutput(retval, "IDASetLinearSolver");
 
         return retval;
     }
@@ -396,11 +396,11 @@ namespace Sundials
         JacobianMatB_ = SUNDenseMatrix(model_->size(), model_->size());
         checkAllocation((void*) JacobianMatB_, "SUNDenseMatrix");
 
-        linearSolverB_ = SUNDenseLinearSolver(yyB_, JacobianMatB_);
-        checkAllocation((void*) linearSolverB_, "SUNDenseLinearSolver");
+        linearSolverB_ = SUNLinSol_Dense(yyB_, JacobianMatB_);
+        checkAllocation((void*) linearSolverB_, "SUNLinSol_Dense");
 
-        retval = IDADlsSetLinearSolverB(solver_, backwardID_, linearSolverB_, JacobianMatB_);
-        checkOutput(retval, "IDADlsSetLinearSolverB");
+        retval = IDASetLinearSolverB(solver_, backwardID_, linearSolverB_, JacobianMatB_);
+        checkOutput(retval, "IDASetLinearSolverB");
 
 
         // Also reinitialize quadratures.
@@ -429,12 +429,12 @@ namespace Sundials
         checkAllocation((void*) JacobianMatB_, "SUNDenseMatrix");
 
         // Create linear solver
-        linearSolverB_ = SUNDenseLinearSolver(yyB_, JacobianMatB_);
-        checkAllocation((void*) linearSolverB_, "SUNDenseLinearSolver");
+        linearSolverB_ = SUNLinSol_Dense(yyB_, JacobianMatB_);
+        checkAllocation((void*) linearSolverB_, "SUNLinSol_Dense");
 
         // Attach linear solver to IDA
-        retval = IDADlsSetLinearSolverB(solver_, backwardID_, linearSolverB_, JacobianMatB_);
-        checkOutput(retval, "IDADlsSetLinearSolverB");
+        retval = IDASetLinearSolverB(solver_, backwardID_, linearSolverB_, JacobianMatB_);
+        checkOutput(retval, "IDASetLinearSolverB");
 
         return retval;
     }
@@ -633,8 +633,8 @@ namespace Sundials
         checkOutput(retval, "IDAGetNumSteps");
         retval = IDAGetNumResEvals(mem, &nre);
         checkOutput(retval, "IDAGetNumResEvals");
-        retval = IDADlsGetNumJacEvals(mem, &nje);
-        checkOutput(retval, "IDADlsGetNumJacEvals");
+        retval = IDAGetNumJacEvals(mem, &nje);
+        checkOutput(retval, "IDAGetNumJacEvals");
         retval = IDAGetNumNonlinSolvIters(mem, &nni);
         checkOutput(retval, "IDAGetNumNonlinSolvIters");
         retval = IDAGetNumErrTestFails(mem, &netf);
@@ -679,5 +679,3 @@ namespace Sundials
 
 } // namespace Sundials
 } // namespace AnalysisManager
-
-
