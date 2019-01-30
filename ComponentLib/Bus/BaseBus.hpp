@@ -57,24 +57,29 @@
  *
  */
 
-#ifndef _BUS_HPP_
-#define _BUS_HPP_
+#ifndef _BASE_BUS_HPP_
+#define _BASE_BUS_HPP_
 
 #include <ModelEvaluatorImpl.hpp>
 
 namespace ModelLib
 {
     /*!
-     * @brief A dummy bus class.
+     * @brief Base class for all power flow buses.
      *
-     * For now, this class just stores bus parameters/variables.
+     * Derived bus types:
+     *   0 - swing bus (V and theta are constants)
+     *   1 - PV bus    (P and V are constants)
+     *   2 - PQ bus    (P and Q are constants)
      *
-     * @todo Implement power flow equations
-     *
+     * @todo Consider static instead of dynamic polymorphism for
+     * bus types. Create Bus class that takes template parameter
+     * BusType.
      */
     template  <class ScalarT, typename IdxT>
-    class Bus : public ModelEvaluatorImpl<ScalarT, IdxT>
+    class BaseBus : public ModelEvaluatorImpl<ScalarT, IdxT>
     {
+    protected:
         using ModelEvaluatorImpl<ScalarT, IdxT>::size_;
         using ModelEvaluatorImpl<ScalarT, IdxT>::nnz_;
         using ModelEvaluatorImpl<ScalarT, IdxT>::time_;
@@ -83,6 +88,7 @@ namespace ModelLib
         using ModelEvaluatorImpl<ScalarT, IdxT>::atol_;
         using ModelEvaluatorImpl<ScalarT, IdxT>::y_;
         using ModelEvaluatorImpl<ScalarT, IdxT>::yp_;
+        using ModelEvaluatorImpl<ScalarT, IdxT>::tag_;
         using ModelEvaluatorImpl<ScalarT, IdxT>::f_;
         using ModelEvaluatorImpl<ScalarT, IdxT>::g_;
         using ModelEvaluatorImpl<ScalarT, IdxT>::yB_;
@@ -96,70 +102,44 @@ namespace ModelLib
     public:
         typedef typename ModelEvaluatorImpl<ScalarT, IdxT>::real_type real_type;
 
-        Bus();
-        Bus(ScalarT V, ScalarT theta, ScalarT P, ScalarT Q);
-        virtual ~Bus();
+        BaseBus(){}
+        virtual ~BaseBus(){}
 
-        int allocate();
-        int initialize();
-        int tagDifferentiable() {return -1;}
-        int evaluateResidual();
-        int evaluateJacobian();
-        int evaluateIntegrand();
+        // Set defaults for ModelEvaluator methods
+        virtual int allocate() { return 0;}
+        virtual int initialize() { return 0;}
+        virtual int tagDifferentiable() { return 0;}
+        virtual int evaluateResidual() { return 0;}
+        virtual int evaluateJacobian() { return 0;}
+        virtual int evaluateIntegrand() { return 0;}
 
-        int initializeAdjoint();
-        int evaluateAdjointResidual();
-        //int evaluateAdjointJacobian();
-        int evaluateAdjointIntegrand();
+        virtual int initializeAdjoint() { return 0;}
+        virtual int evaluateAdjointResidual() { return 0;}
+        //virtual int evaluateAdjointJacobian() { return 0;}
+        virtual int evaluateAdjointIntegrand() { return 0;}
 
-        ScalarT& V()
-        {
-            return V_;
-        }
+        // Pure virtual methods specific to Bus types
+        virtual ScalarT& V() = 0;
+        virtual const ScalarT& V() const = 0;
+        virtual ScalarT& theta() = 0;
+        virtual const ScalarT& theta() const = 0;
+        virtual ScalarT& P() = 0;
+        virtual const ScalarT& P() const = 0;
+        virtual ScalarT& Q() = 0;
+        virtual const ScalarT& Q() const = 0;
 
-        const ScalarT& V() const
-        {
-            return V_;
-        }
+        virtual ScalarT& VB() = 0;
+        virtual const ScalarT& VB() const = 0;
+        virtual ScalarT& thetaB() = 0;
+        virtual const ScalarT& thetaB() const = 0;
+        virtual ScalarT& PB() = 0;
+        virtual const ScalarT& PB() const = 0;
+        virtual ScalarT& QB() = 0;
+        virtual const ScalarT& QB() const = 0;
 
-        ScalarT& theta()
-        {
-            return theta_;
-        }
-
-        const ScalarT& theta() const
-        {
-            return theta_;
-        }
-
-        ScalarT& P()
-        {
-            return P_;
-        }
-
-        const ScalarT& P() const
-        {
-            return P_;
-        }
-
-        ScalarT& Q()
-        {
-            return Q_;
-        }
-
-        const ScalarT& Q() const
-        {
-            return Q_;
-        }
-
-    private:
-        ScalarT V_;
-        ScalarT theta_;
-        ScalarT P_;
-        ScalarT Q_;
-    };
+    }; // class BaseBus
 
 } // namespace ModelLib
 
 
-#endif // _BUS_HPP_
+#endif // _BASE_BUS_HPP_

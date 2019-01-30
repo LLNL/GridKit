@@ -64,7 +64,7 @@
 
 namespace ModelLib
 {
-    template <class ScalarT, typename IdxT> class Bus;
+    template <class ScalarT, typename IdxT> class BaseBus;
 }
 
 namespace ModelLib
@@ -80,8 +80,6 @@ namespace ModelLib
         using ModelEvaluatorImpl<ScalarT, IdxT>::nnz_;
         using ModelEvaluatorImpl<ScalarT, IdxT>::time_;
         using ModelEvaluatorImpl<ScalarT, IdxT>::alpha_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::rtol_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::atol_;
         using ModelEvaluatorImpl<ScalarT, IdxT>::y_;
         using ModelEvaluatorImpl<ScalarT, IdxT>::yp_;
         using ModelEvaluatorImpl<ScalarT, IdxT>::tag_;
@@ -95,10 +93,11 @@ namespace ModelLib
         using ModelEvaluatorImpl<ScalarT, IdxT>::param_up_;
         using ModelEvaluatorImpl<ScalarT, IdxT>::param_lo_;
 
-    public:
         typedef typename ModelEvaluatorImpl<ScalarT, IdxT>::real_type real_type;
+        typedef BaseBus<ScalarT, IdxT> bus_type;
 
-        Generator4(Bus<ScalarT, IdxT>* bus);
+    public:
+        Generator4(BaseBus<ScalarT, IdxT>* bus, ScalarT P0 = 1.0, ScalarT Q0 = 0.0);
         virtual ~Generator4();
 
         int allocate();
@@ -114,33 +113,73 @@ namespace ModelLib
         int evaluateAdjointIntegrand();
 
         // Inline accesor functions
-        /// @todo Implement all inline function in the header file
-        ScalarT& V();
-        const ScalarT& V() const;
-        inline ScalarT& theta();
-        inline const ScalarT& theta() const;
-        inline ScalarT& P();
-        inline const ScalarT& P() const;
-        inline ScalarT& Q();
-        inline const ScalarT& Q() const;
+        ScalarT& V()
+        {
+            return bus_->V();
+        }
+
+        const ScalarT& V() const
+        {
+            return bus_->V();
+        }
+
+        ScalarT& theta()
+        {
+            return bus_->theta();
+        }
+
+        const ScalarT& theta() const
+        {
+            return bus_->theta();
+        }
+
+        ScalarT& P()
+        {
+            return bus_->P();
+        }
+
+        const ScalarT& P() const
+        {
+            return bus_->P();
+        }
+
+        ScalarT& Q()
+        {
+            return bus_->Q();
+        }
+
+        const ScalarT& Q() const
+        {
+            return bus_->Q();
+        }
 
 
     private:
+        const ScalarT& Pm() const
+        {
+            return param_[0];
+        }
+
+        const ScalarT& Ef() const
+        {
+            return param_[1];
+        }
+
         ScalarT Pg();
         ScalarT Qg();
-        inline ScalarT frequencyPenalty(ScalarT omega);
-        inline ScalarT frequencyPenaltyDer(ScalarT omega);
+        ScalarT frequencyPenalty(ScalarT omega);
+        ScalarT frequencyPenaltyDer(ScalarT omega);
 
     private:
-        real_type H_;
-        real_type D_;
-        real_type Xq_;
-        real_type Xd_;
-        real_type Xqp_;
-        real_type Xdp_;
-        real_type Rs_;
-        real_type Tq0p_;
-        real_type Td0p_;
+        real_type H_;    ///< Inertia constant [s]
+        real_type D_;    ///< Damping constant [pu]
+        real_type Xq_;   ///< q-axis synchronous reactance [pu]
+        real_type Xd_;   ///< d-axis synchronous reactance [pu]
+        real_type Xqp_;  ///< q-axis transient reactance [pu]
+        real_type Xdp_;  ///< d-axis transient reactance [pu]
+        real_type Rs_;   ///< stator armature resistance [pu]
+        real_type Tq0p_; ///< q-axis open circuit transient time constant [s]
+        real_type Td0p_; ///< d-axis open circuit transient time constant [s]
         real_type Ef_;
         real_type Pm_;
         real_type omega_s_;
@@ -150,7 +189,10 @@ namespace ModelLib
         real_type c_;
         real_type beta_;
 
-        Bus<ScalarT, IdxT>* bus_;
+        ScalarT P0_;
+        ScalarT Q0_;
+
+        bus_type* bus_;
     };
 
 } // namespace ModelLib

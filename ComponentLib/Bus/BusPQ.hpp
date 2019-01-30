@@ -57,97 +57,135 @@
  *
  */
 
-#include <ModelEvaluatorImpl.hpp>
+#ifndef _BUS_PQ_HPP_
+#define _BUS_PQ_HPP_
 
-namespace ModelLib
-{
-    template <class ScalarT, typename IdxT> class BaseBus;
-}
+#include "BaseBus.hpp"
 
 namespace ModelLib
 {
     /*!
-     * @brief Implementation of a second order generator model.
+     * @brief Implementation of a PQ bus.
+     *
+     * Voltage _V_ and phase _theta_ are variables in PQ bus model.
+     * Active and reactive power, _P_ and _Q_, are residual components.
+     *
      *
      */
     template  <class ScalarT, typename IdxT>
-    class Generator2 : public ModelEvaluatorImpl<ScalarT, IdxT>
+    class BusPQ : public BaseBus<ScalarT, IdxT>
     {
-        using ModelEvaluatorImpl<ScalarT, IdxT>::size_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::nnz_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::time_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::alpha_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::y_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::yp_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::tag_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::f_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::g_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::yB_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::ypB_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::fB_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::gB_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::param_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::param_up_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::param_lo_;
-
-        typedef typename ModelEvaluatorImpl<ScalarT, IdxT>::real_type real_type;
-        typedef BaseBus<ScalarT, IdxT> bus_type;
+        using BaseBus<ScalarT, IdxT>::size_;
+        using BaseBus<ScalarT, IdxT>::y_;
+        using BaseBus<ScalarT, IdxT>::yp_;
+        using BaseBus<ScalarT, IdxT>::yB_;
+        using BaseBus<ScalarT, IdxT>::ypB_;
+        using BaseBus<ScalarT, IdxT>::f_;
+        using BaseBus<ScalarT, IdxT>::fB_;
+        using BaseBus<ScalarT, IdxT>::tag_;
 
     public:
-        Generator2(bus_type* bus);
-        virtual ~Generator2();
+        typedef typename ModelEvaluatorImpl<ScalarT, IdxT>::real_type real_type;
 
-        int allocate();
-        int initialize();
-        int tagDifferentiable();
-        int evaluateResidual();
-        int evaluateJacobian();
-        int evaluateIntegrand();
+        BusPQ();
+        BusPQ(ScalarT V, ScalarT theta);
+        virtual ~BusPQ();
 
-        int initializeAdjoint();
-        int evaluateAdjointResidual();
-        //int evaluateAdjointJacobian();
-        int evaluateAdjointIntegrand();
+        virtual int allocate();
+        virtual int tagDifferentiable();
+        virtual int initialize();
+        virtual int evaluateResidual();
+        virtual int initializeAdjoint();
+        virtual int evaluateAdjointResidual();
 
-        const ScalarT& V() const
+        virtual ScalarT& V()
         {
-            return bus_->V();
+            return y_[0];
         }
 
-        ScalarT& V()
+        virtual const ScalarT& V() const
         {
-            return bus_->V();
+            return y_[0];
         }
 
-        const ScalarT& theta() const
+        virtual ScalarT& theta()
         {
-            return bus_->theta();
+            return y_[1];
         }
 
-        ScalarT& theta()
+        virtual const ScalarT& theta() const
         {
-            return bus_->theta();
+            return y_[1];
+        }
+
+        virtual ScalarT& P()
+        {
+            return f_[0];
+        }
+
+        virtual const ScalarT& P() const
+        {
+            return f_[0];
+        }
+
+        virtual ScalarT& Q()
+        {
+            return f_[1];
+        }
+
+        virtual const ScalarT& Q() const
+        {
+            return f_[1];
+        }
+
+        virtual ScalarT& VB()
+        {
+            return yB_[0];
+        }
+
+        virtual const ScalarT& VB() const
+        {
+            return yB_[0];
+        }
+
+        virtual ScalarT& thetaB()
+        {
+            return yB_[1];
+        }
+
+        virtual const ScalarT& thetaB() const
+        {
+            return yB_[1];
+        }
+
+        virtual ScalarT& PB()
+        {
+            return fB_[0];
+        }
+
+        virtual const ScalarT& PB() const
+        {
+            return fB_[0];
+        }
+
+        virtual ScalarT& QB()
+        {
+            return fB_[1];
+        }
+
+        virtual const ScalarT& QB() const
+        {
+            return fB_[1];
         }
 
     private:
-        inline ScalarT frequencyPenalty(ScalarT omega);
-        inline ScalarT frequencyPenaltyDer(ScalarT omega);
+        // Default initial values for voltage and phase on PQ bus
+        ScalarT V0_;
+        ScalarT theta0_;
 
-    private:
-        real_type H_;
-        real_type D_;
-        real_type Pm_;
-        real_type Xdp_;
-        real_type Eqp_;
-        real_type omega_s_;
-        real_type omega_b_;
-        real_type omega_up_;
-        real_type omega_lo_;
-        real_type theta_s_;
-        real_type c_;
-        real_type beta_;
-
-        bus_type* bus_;
     };
 
 } // namespace ModelLib
+
+
+#endif // _BUS_PQ_HPP_

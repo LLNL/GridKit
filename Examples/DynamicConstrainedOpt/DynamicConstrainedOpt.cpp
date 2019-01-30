@@ -61,8 +61,10 @@
 #include <iostream>
 #include <iomanip>
 
-#include "ComponentLib/Generator2/Generator2.hpp"
-#include "Solver/Dynamic/Ida.hpp"
+#include <ComponentLib/Bus/BusSlack.hpp>
+#include <ComponentLib/Generator2/Generator2.hpp>
+#include <SystemModel.hpp>
+#include <Solver/Dynamic/Ida.hpp>
 
 #include <IpIpoptApplication.hpp>
 #include <IpSolveStatistics.hpp>
@@ -77,13 +79,25 @@ int main()
     using namespace AnalysisManager::Sundials;
     using namespace AnalysisManager;
 
-    ModelEvaluator<double, size_t>* model = new Generator2<double, size_t>();
-    Ida<double, size_t>* idas = new Ida<double, size_t>(model);
+    // Create an infinite bus
+    BaseBus<double, size_t>* bus = new BusSlack<double, size_t>(1.0, 0.0);
 
+    // Attach a generator to that bus
+    Generator2<double, size_t>* gen = new Generator2<double, size_t>(bus);
+
+    // Create a system model
+    SystemModel<double, size_t>* model = new SystemModel<double, size_t>();
+    model->addBus(bus);
+    model->addComponent(gen);
+
+    // allocate model components
     model->allocate();
 
+    // Create numerical integrator and configure it for the generator model
+    Ida<double, size_t>* idas = new Ida<double, size_t>(model);
+
     double t_init  = 0.0;
-    double t_final = 50.0;
+    double t_final = 20.0;
 
     // setup simulation
     idas->configureSimulation();
@@ -93,16 +107,15 @@ int main()
     idas->configureQuadrature();
     idas->initializeQuadrature();
 
-    double t_fault = 0.1;
-    double t_clear = 0.2;
+    double t_fault = 0.02;
+    double t_clear = 0.06;
     idas->runSimulation(t_fault);
     // create initial condition after a fault
     {
-        Generator2<double, size_t>* gen2 =
-            dynamic_cast<Generator2<double, size_t>*>(model);
-        gen2->shortCircuit();
+        gen->V() = 0.0;
         idas->runSimulation(t_clear, 2);
-        gen2->restore();
+        gen->V() = 1.0;
+        gen->theta() = -0.01;
         idas->saveInitialCondition();
     }
 

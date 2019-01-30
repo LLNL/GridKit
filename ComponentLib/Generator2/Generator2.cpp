@@ -59,6 +59,7 @@
 
 #include <iostream>
 #include <cmath>
+#include <ComponentLib/Bus/BusSlack.hpp>
 #include "Generator2.hpp"
 
 namespace ModelLib {
@@ -72,28 +73,22 @@ namespace ModelLib {
  * - Number of optimization parameters = 1
  */
 template <class ScalarT, typename IdxT>
-Generator2<ScalarT, IdxT>::Generator2()
+Generator2<ScalarT, IdxT>::Generator2(bus_type* bus)
   : ModelEvaluatorImpl<ScalarT, IdxT>(2, 1, 1),
     H_(5.0),
-    D_(1.2),
+    D_(0.005),
     Pm_(0.7),
-    Pmax_(1.86),
+    Xdp_(0.5),
+    Eqp_(0.93),
     omega_s_(1.0),
     omega_b_(2.0*60.0*M_PI),
-    omega_up_(omega_s_ + 0.0001),
-    omega_lo_(omega_s_ - 0.0001),
+    omega_up_(omega_s_ + 0.0002),
+    omega_lo_(omega_s_ - 0.0002),
     theta_s_(1.0),
     c_(10000.0),
-    beta_(2)
+    beta_(2),
+    bus_(bus)
 {
-    // Set model tolerances
-    rtol_ = 1.0e-6;
-    atol_ = 1.0e-8;
-
-    // Set optimization parameter value and bounds
-    param_[0] = Pm_;
-    param_up_[0] = 1.5;
-    param_lo_[0] = 0.5;
 }
 
 template <class ScalarT, typename IdxT>
@@ -107,13 +102,27 @@ Generator2<ScalarT, IdxT>::~Generator2()
 template <class ScalarT, typename IdxT>
 int Generator2<ScalarT, IdxT>::allocate()
 {
+    tag_.resize(size_);
+    return 0;
+}
+
+template <class ScalarT, typename IdxT>
+int Generator2<ScalarT, IdxT>::tagDifferentiable()
+{
+    tag_[0] = true;
+    tag_[1] = true;
     return 0;
 }
 
 template <class ScalarT, typename IdxT>
 int Generator2<ScalarT, IdxT>::initialize()
 {
-    y_[0] = asin(param_[0]/Pmax_);  // asin(Pm/Pmax)
+    // Set optimization parameter value and bounds
+    param_[0] = Pm_;
+    param_up_[0] = 1.5;
+    param_lo_[0] = 0.5;
+
+    y_[0] = asin((Pm_*Xdp_)/(Eqp_*V())) + theta(); // <~ asin(Pm/Pmax)
     y_[1] = omega_s_;
     yp_[0] = 0.0;
     yp_[1] = 0.0;
@@ -124,8 +133,8 @@ int Generator2<ScalarT, IdxT>::initialize()
 template <class ScalarT, typename IdxT>
 int Generator2<ScalarT, IdxT>::evaluateResidual()
 {
-    f_[0] = -yp_[0] + y_[1]-omega_s_;
-    f_[1] = -yp_[1] + omega_s_/(2.0*H_)*( param_[0] - Pmax_*sin(y_[0]) - D_*(y_[1]-omega_s_) );
+    f_[0] = -yp_[0] + omega_b_*(y_[1]-omega_s_);
+    f_[1] = -yp_[1] + omega_s_/(2.0*H_)*( param_[0] - Eqp_/Xdp_*V()*sin(y_[0] - theta()) - D_*(y_[1]-omega_s_) );
     return 0;
 }
 
@@ -158,8 +167,8 @@ int Generator2<ScalarT, IdxT>::initializeAdjoint()
 template <class ScalarT, typename IdxT>
 int Generator2<ScalarT, IdxT>::evaluateAdjointResidual()
 {
-    fB_[0]  = -ypB_[0] + omega_s_/(2.0*H_)*Pmax_*cos(y_[0]) * yB_[1];
-    fB_[1]  = -ypB_[1] + omega_s_/(2.0*H_)*D_ * yB_[1] - yB_[0] + frequencyPenaltyDer(y_[1]);
+    fB_[0]  = -ypB_[0] + omega_s_/(2.0*H_)*Eqp_/Xdp_*V()*cos(y_[0] - theta()) * yB_[1];
+    fB_[1]  = -ypB_[1] + omega_s_/(2.0*H_)*D_ * yB_[1] - omega_b_*yB_[0] + frequencyPenaltyDer(y_[1]);
     return 0;
 }
 
@@ -176,22 +185,6 @@ int Generator2<ScalarT, IdxT>::evaluateAdjointIntegrand()
 {
     // std::cout << "Evaluate adjoint Integrand for Gen2..." << std::endl;
     gB_[0] = -omega_s_/(2.0*H_) * yB_[1];
-    return 0;
-}
-
-template <class ScalarT, typename IdxT>
-int Generator2<ScalarT, IdxT>::shortCircuit()
-{
-    Pmax_ = 0.0;
-    // std::cout << "Generator2 short circuited..." << std::endl;
-    return 0;
-}
-
-template <class ScalarT, typename IdxT>
-int Generator2<ScalarT, IdxT>::restore()
-{
-    Pmax_ = 1.1378/0.545;
-    // std::cout << "Generator2 back online...\n";
     return 0;
 }
 

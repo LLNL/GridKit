@@ -60,8 +60,8 @@
 
 #include <iostream>
 #include <cmath>
+#include <ComponentLib/Bus/BaseBus.hpp>
 #include "Generator4.hpp"
-#include "ComponentLib/Bus/Bus.hpp"
 
 namespace ModelLib {
 
@@ -74,7 +74,7 @@ namespace ModelLib {
  * - Number of optimization parameters = 2
  */
 template <class ScalarT, typename IdxT>
-Generator4<ScalarT, IdxT>::Generator4(Bus<ScalarT, IdxT>* bus)
+Generator4<ScalarT, IdxT>::Generator4(bus_type* bus, ScalarT P0, ScalarT Q0)
   : ModelEvaluatorImpl<ScalarT, IdxT>(6, 1, 2),
     H_(5.0),
     D_(0.04),
@@ -93,11 +93,10 @@ Generator4<ScalarT, IdxT>::Generator4(Bus<ScalarT, IdxT>* bus)
     omega_lo_(omega_s_ - 0.0001),
     c_(10000.0),
     beta_(2),
+    P0_(P0),
+    Q0_(Q0),
     bus_(bus)
 {
-    // Set model tolerances
-    rtol_ = 1.0e-7;
-    atol_ = 1.0e-9;
 }
 
 template <class ScalarT, typename IdxT>
@@ -128,19 +127,19 @@ int Generator4<ScalarT, IdxT>::initialize()
     // std::cout << "Initialize Generator4..." << std::endl;
 
     // Compute initial guess for the generator voltage phase
-    const ScalarT delta = atan((Xq_*P() - Rs_*Q()) / (V()*V() + Rs_*P() + Xq_*Q())) + theta();
+    const ScalarT delta = atan((Xq_*P0_ - Rs_*Q0_) / (V()*V() + Rs_*P0_ + Xq_*Q0_)) + theta();
 
     // Compute initial guess for the generator current phase
-    const ScalarT phi   = theta() - delta - atan(Q()/P());
+    const ScalarT phi   = theta() - delta - atan(Q0_/P0_);
 
     // Compute initial gueses for generator currents and potentials in d-q frame
-    const ScalarT Id = std::sqrt(P()*P() + Q()*Q())/V() * sin(phi);
-    const ScalarT Iq = std::sqrt(P()*P() + Q()*Q())/V() * cos(phi);
+    const ScalarT Id = std::sqrt(P0_*P0_ + Q0_*Q0_)/V() * sin(phi);
+    const ScalarT Iq = std::sqrt(P0_*P0_ + Q0_*Q0_)/V() * cos(phi);
     const ScalarT Ed = V()*sin(theta() - delta) + Rs_*Id + Xqp_*Iq;
     const ScalarT Eq = V()*cos(theta() - delta) + Rs_*Iq - Xdp_*Id;
 
-    y_[0] =  delta;  // delta
-    y_[1] =  omega_s_; // + 0.3; // <~ perturb omega
+    y_[0] =  delta;
+    y_[1] =  omega_s_;
     y_[2] =  Ed;
     y_[3] =  Eq;
     y_[4] =  Id;
@@ -152,10 +151,11 @@ int Generator4<ScalarT, IdxT>::initialize()
     yp_[4] = 0.0;
     yp_[5] = 0.0;
 
-    /// Set control parameter values here.
+    // Set control parameter values here.
     Ef_ = Eq - (Xd_ - Xdp_)*Id;                // <~ set to steady state value
     Pm_ = Ed*Id + Eq*Iq + (Xdp_ - Xqp_)*Id*Iq; // <~ set to steady state value
 
+    // Initialize optimization parameters
     param_[0] = Pm_;
     param_up_[0] = 1.5;
     param_lo_[0] = 0.0;
@@ -192,9 +192,9 @@ int Generator4<ScalarT, IdxT>::evaluateResidual()
     // std::cout << "Evaluate residual for Generator4..." << std::endl;
 
     f_[0] = -yp_[0] + y_[1]-omega_s_;
-    f_[1] = -yp_[1] + omega_s_/(2.0*H_)*( param_[0] /* Pm */ - y_[3]*y_[5] - y_[2]*y_[4] - (Xdp_ - Xqp_)*y_[4]*y_[5] - D_*(y_[1]-omega_s_) );
+    f_[1] = -yp_[1] + omega_s_/(2.0*H_)*( Pm() - y_[3]*y_[5] - y_[2]*y_[4] - (Xdp_ - Xqp_)*y_[4]*y_[5] - D_*(y_[1]-omega_s_) );
     f_[2] = -yp_[2] + 1.0/Tq0p_*( -y_[2] - (Xq_ - Xqp_)*y_[5] );
-    f_[3] = -yp_[3] + 1.0/Td0p_*( -y_[3] + (Xd_ - Xdp_)*y_[4] + param_[1] /* Ef */ );
+    f_[3] = -yp_[3] + 1.0/Td0p_*( -y_[3] + (Xd_ - Xdp_)*y_[4] + Ef() );
     f_[4] =  Rs_*y_[4] + Xqp_*y_[5] + V()*sin(theta() - y_[0]) - y_[2];
     f_[5] = -Xdp_*y_[4] + Rs_*y_[5] + V()*cos(theta() - y_[0]) - y_[3];
 
@@ -207,8 +207,8 @@ int Generator4<ScalarT, IdxT>::evaluateResidual()
 template <class ScalarT, typename IdxT>
 int Generator4<ScalarT, IdxT>::evaluateJacobian()
 {
-    std::cout << "Evaluate Jacobian for Generator4..." << std::endl;
-    std::cout << "Jacobian evaluation not implemented!" << std::endl;
+    std::cerr << "Evaluate Jacobian for Generator4..." << std::endl;
+    std::cerr << "Jacobian evaluation not implemented!" << std::endl;
     return 0;
 }
 
@@ -264,58 +264,6 @@ int Generator4<ScalarT, IdxT>::evaluateAdjointIntegrand()
 
     return 0;
 }
-
-
-
-template <class ScalarT, typename IdxT>
-ScalarT& Generator4<ScalarT, IdxT>::V()
-{
-    return bus_->V();
-}
-
-template <class ScalarT, typename IdxT>
-const ScalarT& Generator4<ScalarT, IdxT>::V() const
-{
-    return bus_->V();
-}
-
-template <class ScalarT, typename IdxT>
-ScalarT& Generator4<ScalarT, IdxT>::theta()
-{
-    return bus_->theta();
-}
-
-template <class ScalarT, typename IdxT>
-const ScalarT& Generator4<ScalarT, IdxT>::theta() const
-{
-    return bus_->theta();
-}
-
-template <class ScalarT, typename IdxT>
-ScalarT& Generator4<ScalarT, IdxT>::P()
-{
-    return bus_->P();
-}
-
-template <class ScalarT, typename IdxT>
-const ScalarT& Generator4<ScalarT, IdxT>::P() const
-{
-    return bus_->P();
-}
-
-template <class ScalarT, typename IdxT>
-ScalarT& Generator4<ScalarT, IdxT>::Q()
-{
-    return bus_->Q();
-}
-
-template <class ScalarT, typename IdxT>
-const ScalarT& Generator4<ScalarT, IdxT>::Q() const
-{
-    return bus_->Q();
-}
-
-
 
 
 //

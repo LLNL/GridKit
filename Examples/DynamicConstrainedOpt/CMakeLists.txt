@@ -56,5 +56,5 @@
 #
 
 add_executable(dynconopt DynamicConstrainedOpt.cpp)
-target_link_libraries(dynconopt Generator2 ${solver_libs})
+target_link_libraries(dynconopt Bus Generator4 Generator2 ${solver_libs})
 install(TARGETS dynconopt RUNTIME DESTINATION bin)

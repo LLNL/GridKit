@@ -61,9 +61,10 @@
 #include <iostream>
 #include <iomanip>
 
-#include "ComponentLib/Bus/Bus.hpp"
-#include "ComponentLib/Generator4/Generator4.hpp"
-#include "Solver/Dynamic/Ida.hpp"
+#include <ComponentLib/Bus/BusSlack.hpp>
+#include <ComponentLib/Generator4/Generator4.hpp>
+#include <SystemModel.hpp>
+#include <Solver/Dynamic/Ida.hpp>
 
 /*
  * Compute gradient of an objective function expressed as an integral over
@@ -82,15 +83,21 @@ int main()
     using namespace AnalysisManager;
 
     // Create an infinite bus
-    Bus<double, size_t>* bus = new Bus<double, size_t>(1.0, 0.0, 0.8, 0.3);
+    BaseBus<double, size_t>* bus = new BusSlack<double, size_t>(1.0, 0.0);
 
     // Attach a generator to that bus
-    ModelEvaluator<double, size_t>* model = new Generator4<double, size_t>(bus);
+    Generator4<double, size_t>* gen = new Generator4<double, size_t>(bus, 0.8, 0.3);
+
+    // Create a system model
+    SystemModel<double, size_t>* model = new SystemModel<double, size_t>();
+    model->addBus(bus);
+    model->addComponent(gen);
+
+    // allocate model components
+    model->allocate();
 
     // Create numerical integrator and configure it for the generator model
     Ida<double, size_t>* idas = new Ida<double, size_t>(model);
-
-    model->allocate();
 
     double t_init  = 0.0;
     double t_final = 50.0;
@@ -109,7 +116,7 @@ int main()
 
     // create initial condition after a fault
     {
-        Generator4<double, size_t>* gen = dynamic_cast<Generator4<double, size_t>*>(model);
+        // Generator4<double, size_t>* gen = dynamic_cast<Generator4<double, size_t>*>(model);
         gen->V() = 0.0;
         idas->runSimulationQuadrature(3.0, 20);
         gen->V() = 1.0;

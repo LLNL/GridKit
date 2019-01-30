@@ -57,97 +57,58 @@
  *
  */
 
-#include <ModelEvaluatorImpl.hpp>
+#include <iostream>
+#include <cmath>
+#include "BusSlack.hpp"
 
-namespace ModelLib
+namespace ModelLib {
+
+/*!
+ * @brief Constructor for a slack bus
+ *
+ * Arguments passed to ModelEvaluatorImpl:
+ * - Number of equations = 0 (size_)
+ * - Number of variables = 0 (size_)
+ * - Number of quadratures = 0
+ * - Number of optimization parameters = 0
+ */
+template <class ScalarT, typename IdxT>
+BusSlack<ScalarT, IdxT>::BusSlack()
+    : V_(0.0), theta_(0.0), P_(0.0), Q_(0.0), PB_(0.0), QB_(0.0)
 {
-    template <class ScalarT, typename IdxT> class BaseBus;
+    //std::cout << "Create BusSlack..." << std::endl;
+    //std::cout << "Number of equations is " << size_ << std::endl;
+
+    size_ = 0;
 }
 
-namespace ModelLib
+/*!
+ * @brief BusSlack constructor.
+ *
+ * Arguments passed to ModelEvaluatorImpl:
+ * - Number of equations = 0 (size_)
+ * - Number of variables = 0 (size_)
+ * - Number of quadratures = 0
+ * - Number of optimization parameters = 0
+ */
+template <class ScalarT, typename IdxT>
+BusSlack<ScalarT, IdxT>::BusSlack(ScalarT V, ScalarT theta)
+    : V_(V), theta_(theta), P_(0.0), Q_(0.0), PB_(0.0), QB_(0.0)
 {
-    /*!
-     * @brief Implementation of a second order generator model.
-     *
-     */
-    template  <class ScalarT, typename IdxT>
-    class Generator2 : public ModelEvaluatorImpl<ScalarT, IdxT>
-    {
-        using ModelEvaluatorImpl<ScalarT, IdxT>::size_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::nnz_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::time_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::alpha_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::y_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::yp_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::tag_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::f_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::g_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::yB_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::ypB_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::fB_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::gB_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::param_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::param_up_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::param_lo_;
+    //std::cout << "Create BusSlack..." << std::endl;
+    //std::cout << "Number of equations is " << size_ << std::endl;
+}
 
-        typedef typename ModelEvaluatorImpl<ScalarT, IdxT>::real_type real_type;
-        typedef BaseBus<ScalarT, IdxT> bus_type;
+template <class ScalarT, typename IdxT>
+BusSlack<ScalarT, IdxT>::~BusSlack()
+{
+}
 
-    public:
-        Generator2(bus_type* bus);
-        virtual ~Generator2();
 
-        int allocate();
-        int initialize();
-        int tagDifferentiable();
-        int evaluateResidual();
-        int evaluateJacobian();
-        int evaluateIntegrand();
+// Available template instantiations
+template class BusSlack<double, long int>;
+template class BusSlack<double, size_t>;
 
-        int initializeAdjoint();
-        int evaluateAdjointResidual();
-        //int evaluateAdjointJacobian();
-        int evaluateAdjointIntegrand();
-
-        const ScalarT& V() const
-        {
-            return bus_->V();
-        }
-
-        ScalarT& V()
-        {
-            return bus_->V();
-        }
-
-        const ScalarT& theta() const
-        {
-            return bus_->theta();
-        }
-
-        ScalarT& theta()
-        {
-            return bus_->theta();
-        }
-
-    private:
-        inline ScalarT frequencyPenalty(ScalarT omega);
-        inline ScalarT frequencyPenaltyDer(ScalarT omega);
-
-    private:
-        real_type H_;
-        real_type D_;
-        real_type Pm_;
-        real_type Xdp_;
-        real_type Eqp_;
-        real_type omega_s_;
-        real_type omega_b_;
-        real_type omega_up_;
-        real_type omega_lo_;
-        real_type theta_s_;
-        real_type c_;
-        real_type beta_;
-
-        bus_type* bus_;
-    };
 
 } // namespace ModelLib
+

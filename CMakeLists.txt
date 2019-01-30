@@ -72,6 +72,7 @@ set(solver_libs
 set(CMAKE_MACOSX_RPATH 1)
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/config)
 set(CMAKE_CXX_FLAGS_DEBUG "-Wall -O0 -g")
+set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_INSTALL_PREFIX "/usr/local")
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})

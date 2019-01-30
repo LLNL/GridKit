@@ -57,97 +57,138 @@
  *
  */
 
-#include <ModelEvaluatorImpl.hpp>
+#ifndef _BUS_SLACK_HPP_
+#define _BUS_SLACK_HPP_
 
-namespace ModelLib
-{
-    template <class ScalarT, typename IdxT> class BaseBus;
-}
+#include "BaseBus.hpp"
 
 namespace ModelLib
 {
     /*!
-     * @brief Implementation of a second order generator model.
+     * @brief Implementation of a slack bus.
+     *
+     * Slack bus sets voltage _V_ and phase _theta_ as constants.
+     * Active and reactive power, _P_ and _Q_, are component model outputs,
+     * but are computed outside the BusSlack class.
+     *
      *
      */
     template  <class ScalarT, typename IdxT>
-    class Generator2 : public ModelEvaluatorImpl<ScalarT, IdxT>
+    class BusSlack : public BaseBus<ScalarT, IdxT>
     {
-        using ModelEvaluatorImpl<ScalarT, IdxT>::size_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::nnz_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::time_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::alpha_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::y_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::yp_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::tag_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::f_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::g_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::yB_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::ypB_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::fB_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::gB_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::param_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::param_up_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::param_lo_;
-
-        typedef typename ModelEvaluatorImpl<ScalarT, IdxT>::real_type real_type;
-        typedef BaseBus<ScalarT, IdxT> bus_type;
+        using BaseBus<ScalarT, IdxT>::size_;
+        using BaseBus<ScalarT, IdxT>::y_;
+        using BaseBus<ScalarT, IdxT>::yp_;
+        using BaseBus<ScalarT, IdxT>::f_;
+        using BaseBus<ScalarT, IdxT>::g_;
+        using BaseBus<ScalarT, IdxT>::atol_;
+        using BaseBus<ScalarT, IdxT>::rtol_;
 
     public:
-        Generator2(bus_type* bus);
-        virtual ~Generator2();
+        typedef typename ModelEvaluatorImpl<ScalarT, IdxT>::real_type real_type;
 
-        int allocate();
-        int initialize();
-        int tagDifferentiable();
-        int evaluateResidual();
-        int evaluateJacobian();
-        int evaluateIntegrand();
+        BusSlack();
+        BusSlack(ScalarT V, ScalarT theta);
+        virtual ~BusSlack();
 
-        int initializeAdjoint();
-        int evaluateAdjointResidual();
-        //int evaluateAdjointJacobian();
-        int evaluateAdjointIntegrand();
-
-        const ScalarT& V() const
+        /// @todo Should slack bus allow changing voltage?
+        virtual ScalarT& V()
         {
-            return bus_->V();
+            return V_;
         }
 
-        ScalarT& V()
+        virtual const ScalarT& V() const
         {
-            return bus_->V();
+            return V_;
         }
 
-        const ScalarT& theta() const
+        /// @todo Should slack bus allow changing phase?
+        virtual ScalarT& theta()
         {
-            return bus_->theta();
+            return theta_;
         }
 
-        ScalarT& theta()
+        virtual const ScalarT& theta() const
         {
-            return bus_->theta();
+            return theta_;
+        }
+
+        virtual ScalarT& P()
+        {
+            return P_;
+        }
+
+        virtual const ScalarT& P() const
+        {
+            return P_;
+        }
+
+        virtual ScalarT& Q()
+        {
+            return Q_;
+        }
+
+        virtual const ScalarT& Q() const
+        {
+            return Q_;
+        }
+
+        /// @todo Should slack bus allow changing voltage?
+        virtual ScalarT& VB()
+        {
+            return VB_;
+        }
+
+        virtual const ScalarT& VB() const
+        {
+            return VB_;
+        }
+
+        /// @todo Should slack bus allow changing phase?
+        virtual ScalarT& thetaB()
+        {
+            return thetaB_;
+        }
+
+        virtual const ScalarT& thetaB() const
+        {
+            return thetaB_;
+        }
+
+        virtual ScalarT& PB()
+        {
+            return PB_;
+        }
+
+        virtual const ScalarT& PB() const
+        {
+            return PB_;
+        }
+
+        virtual ScalarT& QB()
+        {
+            return QB_;
+        }
+
+        virtual const ScalarT& QB() const
+        {
+            return QB_;
         }
 
     private:
-        inline ScalarT frequencyPenalty(ScalarT omega);
-        inline ScalarT frequencyPenaltyDer(ScalarT omega);
+        ScalarT V_;
+        ScalarT theta_;
+        ScalarT P_;
+        ScalarT Q_;
 
-    private:
-        real_type H_;
-        real_type D_;
-        real_type Pm_;
-        real_type Xdp_;
-        real_type Eqp_;
-        real_type omega_s_;
-        real_type omega_b_;
-        real_type omega_up_;
-        real_type omega_lo_;
-        real_type theta_s_;
-        real_type c_;
-        real_type beta_;
+        ScalarT VB_;
+        ScalarT thetaB_;
+        ScalarT PB_;
+        ScalarT QB_;
 
-        bus_type* bus_;
-    };
+    }; // class BusSlack
 
 } // namespace ModelLib
+
+
+#endif // _BUS_SLACK_HPP_

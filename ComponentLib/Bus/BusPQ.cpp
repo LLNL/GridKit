@@ -59,125 +59,144 @@
 
 #include <iostream>
 #include <cmath>
-#include "Bus.hpp"
+#include "BusPQ.hpp"
 
 namespace ModelLib {
 
 /*!
- * @brief Default constructor for the dummy bus model
+ * @brief Constructor for a PQ bus
  *
- * Arguments passed to ModelEvaluatorImpl:
- * - Number of equations = 0
+ * @todo Arguments that should be passed to ModelEvaluatorImpl constructor:
+ * - Number of equations = 2 (size_)
+ * - Number of variables = 2 (size_)
  * - Number of quadratures = 0
  * - Number of optimization parameters = 0
  */
 template <class ScalarT, typename IdxT>
-Bus<ScalarT, IdxT>::Bus()
-  : ModelEvaluatorImpl<ScalarT, IdxT>(0, 0, 0),
-    V_(1.0),
-    theta_(0.0),
-    P_(1.0),
-    Q_(0.0)
+BusPQ<ScalarT, IdxT>::BusPQ()
+  : V0_(0.0), theta0_(0.0)
 {
-    //std::cout << "Create Bus..." << std::endl;
+    //std::cout << "Create BusPQ..." << std::endl;
+    //std::cout << "Number of equations is " << size_ << std::endl;
+
+    size_ = 2;
 }
 
 /*!
- * @brief Constructor that sets parameters for the dummy bus model
+ * @brief BusPQ constructor.
  *
- * Arguments passed to ModelEvaluatorImpl:
- * - Number of equations = 0
+ * This constructor sets initial values for voltage and phase angle.
+ *
+ * @todo Arguments that should be passed to ModelEvaluatorImpl constructor:
+ * - Number of equations = 2 (size_)
+ * - Number of variables = 2 (size_)
  * - Number of quadratures = 0
  * - Number of optimization parameters = 0
  */
 template <class ScalarT, typename IdxT>
-Bus<ScalarT, IdxT>::Bus(ScalarT V, ScalarT theta, ScalarT P, ScalarT Q)
-  : ModelEvaluatorImpl<ScalarT, IdxT>(0, 0, 0),
-    V_(V),
-    theta_(theta),
-    P_(P),
-    Q_(Q)
+BusPQ<ScalarT, IdxT>::BusPQ(ScalarT V, ScalarT theta)
+  : V0_(V), theta0_(theta)
 {
-    //std::cout << "Create Bus..." << std::endl;
+    //std::cout << "Create BusPQ..." << std::endl;
+    //std::cout << "Number of equations is " << size_ << std::endl;
+
+    size_ = 2;
 }
 
 template <class ScalarT, typename IdxT>
-Bus<ScalarT, IdxT>::~Bus()
+BusPQ<ScalarT, IdxT>::~BusPQ()
 {
-    //std::cout << "Destroy Bus..." << std::endl;
+    //std::cout << "Destroy Gen2..." << std::endl;
 }
 
 /*!
- * @brief allocate method computes sparsity pattern of the Jacobian.
+ * @brief allocate method resizes local solution and residual vectors.
  */
 template <class ScalarT, typename IdxT>
-int Bus<ScalarT, IdxT>::allocate()
+int BusPQ<ScalarT, IdxT>::allocate()
 {
-    //std::cout << "Allocate Bus..." << std::endl;
+    //std::cout << "Allocate Gen2..." << std::endl;
+    f_.resize(size_);
+    y_.resize(size_);
+    yp_.resize(size_);
+    tag_.resize(size_);
+
+    fB_.resize(size_);
+    yB_.resize(size_);
+    ypB_.resize(size_);
+
+    return 0;
+}
+
+
+template <class ScalarT, typename IdxT>
+int BusPQ<ScalarT, IdxT>::tagDifferentiable()
+{
+    tag_[0] = false;
+    tag_[1] = false;
+    return 0;
+}
+
+
+/*!
+ * @brief initialize method sets bus variables to stored initial values.
+ */
+template <class ScalarT, typename IdxT>
+int BusPQ<ScalarT, IdxT>::initialize()
+{
+    // std::cout << "Initialize BusPQ..." << std::endl;
+    y_[0] = V0_;
+    y_[1] = theta0_;
+    yp_[0] = 0.0;
+    yp_[1] = 0.0;
+
+    return 0;
+}
+
+/*!
+ * @brief PQ bus does not compute residuals, so here we just reset residual values.
+ *
+ * @warning This implementation assumes bus residuals are always evaluated
+ * _before_ component model residuals.
+ *
+ */
+template <class ScalarT, typename IdxT>
+int BusPQ<ScalarT, IdxT>::evaluateResidual()
+{
+    f_[0] = 0.0;
+    f_[1] = 0.0;
+
+    return 0;
+}
+
+
+/*!
+ * @brief initialize method sets bus variables to stored initial values.
+ */
+template <class ScalarT, typename IdxT>
+int BusPQ<ScalarT, IdxT>::initializeAdjoint()
+{
+    // std::cout << "Initialize BusPQ..." << std::endl;
+    yB_[0] = 0.0;
+    yB_[1] = 0.0;
+    ypB_[0] = 0.0;
+    ypB_[1] = 0.0;
+
     return 0;
 }
 
 template <class ScalarT, typename IdxT>
-int Bus<ScalarT, IdxT>::initialize()
+int BusPQ<ScalarT, IdxT>::evaluateAdjointResidual()
 {
-    // std::cout << "Initialize Bus..." << std::endl;
+    fB_[0] = 0.0;
+    fB_[1] = 0.0;
+
     return 0;
 }
-
-template <class ScalarT, typename IdxT>
-int Bus<ScalarT, IdxT>::evaluateResidual()
-{
-    // std::cout << "Evaluate residual for Bus..." << std::endl;
-    return 0;
-}
-
-template <class ScalarT, typename IdxT>
-int Bus<ScalarT, IdxT>::evaluateJacobian()
-{
-    return 0;
-}
-
-template <class ScalarT, typename IdxT>
-int Bus<ScalarT, IdxT>::evaluateIntegrand()
-{
-    // std::cout << "Evaluate Integrand for Bus..." << std::endl;
-    return 0;
-}
-
-template <class ScalarT, typename IdxT>
-int Bus<ScalarT, IdxT>::initializeAdjoint()
-{
-    //std::cout << "Initialize adjoint for Bus..." << std::endl;
-    return 0;
-}
-
-template <class ScalarT, typename IdxT>
-int Bus<ScalarT, IdxT>::evaluateAdjointResidual()
-{
-    // std::cout << "Evaluate adjoint residual for Bus..." << std::endl;
-    return 0;
-}
-
-// template <class ScalarT, typename IdxT>
-// int Bus<ScalarT, IdxT>::evaluateAdjointJacobian()
-// {
-//     std::cout << "Evaluate adjoint Jacobian for Bus..." << std::endl;
-//     std::cout << "Adjoint Jacobian evaluation not implemented!" << std::endl;
-//     return 0;
-// }
-
-template <class ScalarT, typename IdxT>
-int Bus<ScalarT, IdxT>::evaluateAdjointIntegrand()
-{
-    // std::cout << "Evaluate adjoint Integrand for Bus..." << std::endl;
-    return 0;
-}
-
-
 
 // Available template instantiations
-template class Bus<double, long int>;
-template class Bus<double, size_t>;
+template class BusPQ<double, long int>;
+template class BusPQ<double, size_t>;
 
 
 } // namespace ModelLib
