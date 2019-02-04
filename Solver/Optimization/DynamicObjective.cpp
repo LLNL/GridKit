@@ -86,8 +86,10 @@ template <class ScalarT, typename IdxT>
 bool DynamicObjective<ScalarT, IdxT>::get_nlp_info(Index& n, Index& m, Index& nnz_jac_g,
                                                    Index& nnz_h_lag, IndexStyleEnum& index_style)
 {
-    // The optimization problem has one variable. For  now this is
-    // hard-wired to Pm_ variable in Gen0 model.
+    // This code handles one objective function
+    assert(model_->size_quad() == 1);
+    
+    // Number of optimization variables.
     n = model_->size_opt();
 
     // There are no constraints
@@ -167,6 +169,7 @@ bool DynamicObjective<ScalarT, IdxT>::eval_f(Index n, const Number* x, bool new_
 template <class ScalarT, typename IdxT>
 bool DynamicObjective<ScalarT, IdxT>::eval_grad_f(Index n, const Number* x, bool new_x, Number* grad_f)
 {
+    assert(model_->size_opt() == n);
     // Update optimization parameters
     for(IdxT i = 0; i < model_->size_opt(); ++i)
         model_->param()[i] = x[i];

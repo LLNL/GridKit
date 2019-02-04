@@ -149,8 +149,6 @@ public:
             size_      += bus->size();
             size_quad_ += bus->size_quad();
             size_opt_  += bus->size_opt();
-            // Debugging output:
-            // std::cout << "size = " << size_ << "\n";
         }
 
         // Allocate all components
@@ -180,8 +178,6 @@ public:
 
         assert(size_quad_ == 1 or size_quad_ == 0);
 
-        // std::cout << "nvar = " << size_ << ", nint = " << size_quad_ << ", noptparam = " << size_opt_ << "\n";
-
         return 0;
     }
 
@@ -189,7 +185,7 @@ public:
      * @brief Initialize buses first, then all the other components.
      *
      * @pre All buses and components must be allocated at this point.
-     * @pre Bus variables and written before component variables in the
+     * @pre Bus variables are written before component variables in the
      * system variable vector.
      *
      * Buses must be initialized before other components, because other
@@ -258,6 +254,10 @@ public:
 
     /**
      * @todo Tagging differential variables
+     *
+     * Identify what variables in the system of differential-algebraic
+     * equations are differential variables, i.e. their derivatives
+     * appear in the equations.
      */
     int tagDifferentiable()
     {
@@ -291,13 +291,14 @@ public:
      *
      * First, update bus and component variables from the system solution
      * vector. Next, evaluate residuals in buses and components, and
-     * components, and then copy values to the global residual vector.
+     * then copy values to the global residual vector.
      *
      * @warning Residuals must be computed for buses, before component
      * residuals are computed. Buses own residuals for active and
-     * power P and Q, but all the contributions to these residuals come
-     * from components. Buses reset residual values to zero at every step,
-     * so that is why they need to be computed first.
+     * power P and Q, but the contributions to these residuals come
+     * from components. Buses assign their residual values, while components
+     * add to those values by in-place adition. This is why bus residuals
+     * need to be computed first.
      *
      * @todo Here, components write to local values, which are then copied
      * to global system vectors. Make components write to the system
@@ -344,7 +345,7 @@ public:
             component->evaluateResidual();
         }
 
-        // Update residual vector 
+        // Update residual vector
         IdxT resOffset = 0;
         for(const auto& bus: buses_)
         {
@@ -616,7 +617,6 @@ public:
      */
     int evaluateAdjointIntegrand()
     {
-        //std::cout << "Call to system's evaluateAdjointIntegrand ...\n";
         // First, update variables
         IdxT varOffset = 0;
         IdxT optOffset = 0;

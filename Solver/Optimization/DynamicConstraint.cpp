@@ -86,6 +86,9 @@ template <class ScalarT, typename IdxT>
 bool DynamicConstraint<ScalarT, IdxT>::get_nlp_info(Index& n, Index& m, Index& nnz_jac_g,
                                               Index& nnz_h_lag, IndexStyleEnum& index_style)
 {
+    // This code handles one objective function
+    assert(model_->size_quad() == 1);
+
     // Number of parameters is size of the system plus 1 fictitious parameter
     // to store the objective value.
     n = model_->size_opt() + 1;

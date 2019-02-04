@@ -116,7 +116,6 @@ int main()
 
     // create initial condition after a fault
     {
-        // Generator4<double, size_t>* gen = dynamic_cast<Generator4<double, size_t>*>(model);
         gen->V() = 0.0;
         idas->runSimulationQuadrature(3.0, 20);
         gen->V() = 1.0;
