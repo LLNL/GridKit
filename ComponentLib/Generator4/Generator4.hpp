@@ -171,6 +171,61 @@ namespace ModelLib
         ScalarT frequencyPenaltyDer(ScalarT omega);
 
     private:
+        //
+        // Private inlined accessor methods
+        //
+
+        const ScalarT dotDelta() const
+        {
+            return yp_[0];
+        }
+
+        const ScalarT dotOmega() const
+        {
+            return yp_[1];
+        }
+
+        const ScalarT dotEdp() const
+        {
+            return yp_[2];
+        }
+
+        const ScalarT dotEqp() const
+        {
+            return yp_[3];
+        }
+
+        const ScalarT delta() const
+        {
+            return y_[0];
+        }
+
+        const ScalarT omega() const
+        {
+            return y_[1];
+        }
+
+        const ScalarT Edp() const
+        {
+            return y_[2];
+        }
+
+        const ScalarT Eqp() const
+        {
+            return y_[3];
+        }
+
+        const ScalarT Id() const
+        {
+            return y_[4];
+        }
+
+        const ScalarT Iq() const
+        {
+            return y_[5];
+        }
+
+    private:
         real_type H_;    ///< Inertia constant [s]
         real_type D_;    ///< Damping constant [pu]
         real_type Xq_;   ///< q-axis synchronous reactance [pu]

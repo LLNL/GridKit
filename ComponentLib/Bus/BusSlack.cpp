@@ -104,6 +104,22 @@ BusSlack<ScalarT, IdxT>::~BusSlack()
 {
 }
 
+template <class ScalarT, typename IdxT>
+int BusSlack<ScalarT, IdxT>::evaluateResidual()
+{
+    P() = 0.0;
+    Q() = 0.0;
+    return 0;
+}
+
+template <class ScalarT, typename IdxT>
+int BusSlack<ScalarT, IdxT>::evaluateAdjointResidual()
+{
+    PB() = 0.0;
+    QB() = 0.0;
+    return 0;
+}
+
 
 // Available template instantiations
 template class BusSlack<double, long int>;

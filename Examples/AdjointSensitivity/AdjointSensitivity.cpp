@@ -100,7 +100,7 @@ int main()
     Ida<double, size_t>* idas = new Ida<double, size_t>(model);
 
     double t_init  = 0.0;
-    double t_final = 50.0;
+    double t_final = 15.0;
 
     // setup simulation
     idas->configureSimulation();
@@ -111,13 +111,15 @@ int main()
     idas->initializeQuadrature();
 
 
-    idas->runSimulationQuadrature(0.1, 2);
+    idas->runSimulation(0.1, 2);
     idas->saveInitialCondition();
 
     // create initial condition after a fault
     {
+        idas->getSavedInitialCondition();
+        idas->initializeSimulation(t_init);
         gen->V() = 0.0;
-        idas->runSimulationQuadrature(3.0, 20);
+        idas->runSimulation(0.1, 20);
         gen->V() = 1.0;
         idas->saveInitialCondition();
     }
@@ -135,7 +137,7 @@ int main()
     idas->printFinalStats();
 
     const double g1 = Q[0];
-    const double eps = 5e-4;
+    const double eps = 1e-4;
 
     // Compute gradient of the objective function numerically
     std::vector<double> dGdp(model->size_opt());
@@ -146,7 +148,7 @@ int main()
       idas->getSavedInitialCondition();
       idas->initializeSimulation(t_init);
       idas->initializeQuadrature();
-      idas->runSimulationQuadrature(t_final,10);
+      idas->runSimulationQuadrature(t_final,100);
 
       std::cout << "\n\nCost of computing derivative with respect to parameter "
                 << i << ":\n\n";

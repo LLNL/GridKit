@@ -118,7 +118,25 @@ int Generator4<ScalarT, IdxT>::allocate()
 }
 
 /**
- * Initialization of the generator model
+ * @brief Initialization of the generator model
+ *
+ * Initialization equations are derived from example 9.2 in Power System
+ * Modeling and Scripting, Federico Milano, Chapter 9, p. 225:
+ * \f{eqnarray*}{
+ * &~& \omega_0 = 0, \\
+ * &~& \delta_0 = \tan^{-1} \left(\frac{X_q P_0 - R_s Q_0}{V_0^2 + R_s P_0 + X_q Q_0} \right) + \theta_0, \\
+ * &~& \phi_0   = \delta_0 - \theta_0 + \tan^{-1} \left( \frac{Q_0}{P_0} \right), \\
+ * &~& I_{d0}   = \frac{\sqrt{P_0^2 + Q_0^2}}{V_0} \sin(\phi_0), \\
+ * &~& I_{q0}   = \frac{\sqrt{P_0^2 + Q_0^2}}{V_0} \cos(\phi_0), \\
+ * &~& E_{d0}'  = V_0 \sin(\delta_0 - \theta_0) + R_s I_{d0} - X_q' I_{q0}, \\
+ * &~& E_{q0}'  = V_0 \cos(\delta_0 - \theta_0) + R_s I_{q0} + X_d' I_{d0}
+ * \f}
+ *
+ * The input from exciter and governor is set to the steady state value:
+ * \f{eqnarray*}{
+ * &~& E_{f0} = E_{q0}' + (X_d - X_d') I_{d0}, \\
+ * &~& P_{m0} = E_{d0}' I_{d0} + E_{q0}' I_{q0} + ( X_q' - X_d') I_{d0} I_{q0}
+ * \f}
  *
  */
 template <class ScalarT, typename IdxT>
@@ -186,21 +204,49 @@ int Generator4<ScalarT, IdxT>::tagDifferentiable()
     return 0;
 }
 
+/**
+ * @brief Computes residual vector for the generator model.
+ *
+ * Residual equations are given per model in Power System Modeling and
+ * Scripting, Federico Milano, Chapter 15, p. 334:
+ * \f{eqnarray*}{
+ * f_0: &~& \dot{\delta} -\omega_b (\omega - \omega_s), \\
+ * f_1: &~& 2H/\omega_s \dot{\omega} - L_m(P_m) + E_q' I_q + E_d' I_d + (X_q' - X_d')I_d I_q  + D (\omega - \omega_s), \\
+ * f_2: &~& T_{q0}' \dot{E}_d' + E_d' - (X_q - X_q')I_q, \\
+ * f_3: &~& T_{d0}' \dot{E}_q' + E_q' + (X_d - X_d')I_d - E_f, \\
+ * f_4: &~& R_s I_d - X_q' I_q + V \sin(\delta - \theta) - E_d', \\
+ * f_5: &~& R_s I_q + X_d' I_d + V \cos(\delta - \theta) - E_q',
+ * \f}
+ * where \f$ \Omega_b \f$ is the synchronous frequency in [rad/s], and
+ * overdot denotes time derivative.
+ *
+ * Generator injection active and reactive power are
+ * \f{eqnarray*}{
+ * P_g &=& E_d' I_d + E_q' I_q + (X_q' - X_d') I_d I_q - R_s (I_d^2 + I_q^2), \\
+ * Q_q &=& E_q' I_d - E_d' I_q - X_q' I_q^2 - X_d' I_d^2, \\
+ * \f}
+ * respectively.
+ *
+ * State variables are:
+ * \f$ y_0 = \omega \f$, \f$ y_1 = \delta \f$, \f$ y_2 = E_d' \f$, \f$ y_3 = E_q' \f$,
+ * \f$ y_4 = I_d \f$, \f$ y_5 = I_q \f$.
+ *
+ */
 template <class ScalarT, typename IdxT>
 int Generator4<ScalarT, IdxT>::evaluateResidual()
 {
     // std::cout << "Evaluate residual for Generator4..." << std::endl;
-
-    f_[0] = -yp_[0] + y_[1]-omega_s_;
-    f_[1] = -yp_[1] + omega_s_/(2.0*H_)*( Pm() - y_[3]*y_[5] - y_[2]*y_[4] - (Xdp_ - Xqp_)*y_[4]*y_[5] - D_*(y_[1]-omega_s_) );
-    f_[2] = -yp_[2] + 1.0/Tq0p_*( -y_[2] - (Xq_ - Xqp_)*y_[5] );
-    f_[3] = -yp_[3] + 1.0/Td0p_*( -y_[3] + (Xd_ - Xdp_)*y_[4] + Ef() );
-    f_[4] =  Rs_*y_[4] + Xqp_*y_[5] + V()*sin(theta() - y_[0]) - y_[2];
-    f_[5] = -Xdp_*y_[4] + Rs_*y_[5] + V()*cos(theta() - y_[0]) - y_[3];
+    f_[0] = dotDelta() -  omega_b_* (omega() - omega_s_);
+    f_[1] = (2.0*H_)/omega_s_*dotOmega() - Pm() + Eqp()*Iq() + Edp()*Id() + (- Xdp_ + Xqp_)*Id()*Iq() + D_*(omega() - omega_s_);
+    f_[2] = Tq0p_*dotEdp() + Edp() - (Xq_ - Xqp_)*Iq();
+    f_[3] = Td0p_*dotEqp() + Eqp() + (Xd_ - Xdp_)*Id() - Ef();
+    f_[4] =  Rs_*Id() - Xqp_*Iq() + V()*sin(delta() - theta()) - Edp();
+    f_[5] =  Xdp_*Id() + Rs_*Iq() + V()*cos(delta() - theta()) - Eqp();
 
     // Compute active and reactive load provided by the infinite bus.
-    P() = Pg();
-    Q() = Qg();
+    P() += Pg();
+    Q() += Qg();
+
     return 0;
 }
 
@@ -234,16 +280,36 @@ int Generator4<ScalarT, IdxT>::initializeAdjoint()
     return 0;
 }
 
+
+/**
+ * @brief Computes adjoint residual vector for the generator model.
+ *
+ * Adjoint residual equations are given as:
+ * \f{eqnarray*}{
+ * f_{B0}: &~& \dot{y}_{B0} - y_{B4} V \cos(\delta - \theta) + y_{B5} V \sin(\delta - \theta), \\
+ * f_{B1}: &~& 2H/\omega_s \dot{y}_{B1} + y_{B0} \omega_b - y_{B1} D + y_{B9} (1 - T_2/T_1) - y_{B10} K T_2/T_1 + g_{\omega}(\omega), \\
+ * f_{B2}: &~& T_{q0}' \dot{y}_{B2} - y_{B1} I_d - y_{B2} + y_{B4} + y_{B6} I_d - y_{B7} I_q, \\
+ * f_{B3}: &~& T_{d0}' \dot{y}_{B3} - y_{B1} I_q - y_{B3} + y_{B5} + y_{B6} I_q + y_{B7} I_d, \\
+ * f_{B4}: &~& -y_{B1} (E_d' + (-X_d'+X_q') I_q) - y_{B3} (X_d - X_d') - y_{B4} R_s - y_{B5} X_d' + y_{B6} (E_d' + (X_q' - X_d') I_q - 2 R_s I_d) + y_{B7} (E_q' - 2 X_d' I_d), \\
+ * f_{B5}: &~& -y_{B1} (E_q' + (-X_d'+X_q') I_d) + y_{B2} (X_q - X_q') + y_{B4} X_q' - y_{B5} R_s + y_{B6} (E_q' + (X_q' - X_d') I_d - 2 R_s I_q) - y_{B7} (E_d' + 2 X_q' I_q). \\
+ * \f}
+ *
+ */
 template <class ScalarT, typename IdxT>
 int Generator4<ScalarT, IdxT>::evaluateAdjointResidual()
 {
     // std::cout << "Evaluate adjoint residual for Generator4..." << std::endl;
-    fB_[0] = -ypB_[0] + yB_[4]*V()*cos(theta() - y_[0]) - yB_[5]*V()*sin(theta() - y_[0]);
-    fB_[1] = -ypB_[1] - yB_[0] + yB_[1]*(omega_s_/(2.0*H_))*D_ + frequencyPenaltyDer(y_[1]);
-    fB_[2] = -ypB_[2] + yB_[1]*(omega_s_/(2.0*H_))*y_[4] + yB_[2]/Tq0p_ + yB_[4];
-    fB_[3] = -ypB_[3] + yB_[1]*(omega_s_/(2.0*H_))*y_[5] + yB_[3]/Td0p_ + yB_[5];
-    fB_[4] = yB_[1]*(omega_s_/(2.0*H_))*(y_[2] + (Xdp_ - Xqp_)*y_[5]) - yB_[3]*(Xd_ - Xdp_)/Td0p_ - yB_[4]*Rs_  + yB_[5]*Xdp_;
-    fB_[5] = yB_[1]*(omega_s_/(2.0*H_))*(y_[3] + (Xdp_ - Xqp_)*y_[4]) + yB_[2]*(Xq_ - Xqp_)/Tq0p_ - yB_[4]*Xqp_ - yB_[5]*Rs_;
+    ScalarT sinPhi = sin(delta() - theta());
+    ScalarT cosPhi = cos(delta() - theta());
+
+    // Generator adjoint
+    fB_[0] = ypB_[0] - yB_[4]*V()*cosPhi + yB_[5]*V()*sinPhi;
+    fB_[1] = 2.0*H_/omega_s_*ypB_[1] + yB_[0]*omega_b_ - yB_[1]*D_ + frequencyPenaltyDer(omega());
+    fB_[2] = Tq0p_*ypB_[2] - yB_[1]*Id() - yB_[2] + yB_[4];
+    fB_[3] = Td0p_*ypB_[3] - yB_[1]*Iq() - yB_[3] + yB_[5];
+    fB_[4] = -yB_[1]*(Edp() + (Xqp_ - Xdp_)*Iq()) - yB_[3]*(Xd_ - Xdp_) - yB_[4]*Rs_ - yB_[5]*Xdp_;
+    fB_[5] = -yB_[1]*(Eqp() + (Xqp_ - Xdp_)*Id()) + yB_[2]*(Xq_ - Xqp_) + yB_[4]*Xqp_ - yB_[5]*Rs_;
+
     return 0;
 }
 
@@ -259,8 +325,8 @@ template <class ScalarT, typename IdxT>
 int Generator4<ScalarT, IdxT>::evaluateAdjointIntegrand()
 {
     // std::cout << "Evaluate adjoint Integrand for Generator4..." << std::endl;
-    gB_[0] = -omega_s_/(2.0*H_) * yB_[1];
-    gB_[1] = -1.0/Td0p_ * yB_[3];
+    gB_[0] = yB_[1];
+    gB_[1] = yB_[3];
 
     return 0;
 }
@@ -272,6 +338,9 @@ int Generator4<ScalarT, IdxT>::evaluateAdjointIntegrand()
 
 /**
  * Generator active power Pg.
+ *
+ * \f[ P_g = E_q' I_q + E_d' I_d + (X_q' - X_d') I_q I_d - R_a (I_d^2 + I_q^2) \f]
+ *
  */
 template <class ScalarT, typename IdxT>
 ScalarT Generator4<ScalarT, IdxT>::Pg()
@@ -281,6 +350,8 @@ ScalarT Generator4<ScalarT, IdxT>::Pg()
 
 /**
  * Generator reactive power Qg.
+ *
+ * \f[ Q_g = E_q' I_d - E_d' I_q - X_d' I_d^2 - X_q' I_q^2 \f]
  */
 template <class ScalarT, typename IdxT>
 ScalarT Generator4<ScalarT, IdxT>::Qg()

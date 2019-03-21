@@ -90,6 +90,8 @@ namespace ModelLib
         BusSlack();
         BusSlack(ScalarT V, ScalarT theta);
         virtual ~BusSlack();
+        virtual int evaluateResidual();
+        virtual int evaluateAdjointResidual();
 
         /// @todo Should slack bus allow changing voltage?
         virtual ScalarT& V()
