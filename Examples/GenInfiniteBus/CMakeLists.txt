@@ -55,6 +55,6 @@
 # endorsement purposes.
 #
 
-add_subdirectory(AdjointSensitivity)
-add_subdirectory(DynamicConstrainedOpt)
-add_subdirectory(GenInfiniteBus)
+add_executable(geninfbus GenInfiniteBus.cpp)
+target_link_libraries(geninfbus Bus Generator4 ${solver_libs})
+install(TARGETS geninfbus RUNTIME DESTINATION bin)
