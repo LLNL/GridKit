@@ -55,6 +55,7 @@
 # endorsement purposes.
 #
 
+add_subdirectory(Branch)
 add_subdirectory(Bus)
 add_subdirectory(Generator2)
 add_subdirectory(Generator4)
