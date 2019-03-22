@@ -57,140 +57,112 @@
  *
  */
 
-#ifndef _BUS_SLACK_HPP_
-#define _BUS_SLACK_HPP_
 
-#include "BaseBus.hpp"
+#include <iostream>
+#include <cmath>
+#include <vector>
+#include "Load.hpp"
+#include <ComponentLib/Bus/BaseBus.hpp>
 
-namespace ModelLib
+namespace ModelLib {
+
+/*!
+ * @brief Constructor for a constant load model
+ *
+ * Calls default ModelEvaluatorImpl constructor.
+ */
+
+template <class ScalarT, typename IdxT>
+Load<ScalarT, IdxT>::Load(bus_type* bus, ScalarT P, ScalarT Q)
+  : P_(P),
+    Q_(Q),
+    bus_(bus)
 {
-    /*!
-     * @brief Implementation of a slack bus.
-     *
-     * Slack bus sets voltage _V_ and phase _theta_ as constants.
-     * Active and reactive power, _P_ and _Q_, are component model outputs,
-     * but are computed outside the BusSlack class.
-     *
-     *
-     */
-    template  <class ScalarT, typename IdxT>
-    class BusSlack : public BaseBus<ScalarT, IdxT>
-    {
-        using BaseBus<ScalarT, IdxT>::size_;
-        using BaseBus<ScalarT, IdxT>::y_;
-        using BaseBus<ScalarT, IdxT>::yp_;
-        using BaseBus<ScalarT, IdxT>::f_;
-        using BaseBus<ScalarT, IdxT>::g_;
-        using BaseBus<ScalarT, IdxT>::atol_;
-        using BaseBus<ScalarT, IdxT>::rtol_;
+    //std::cout << "Create a load model with " << size_ << " variables ...\n";
+}
 
-    public:
-        typedef typename ModelEvaluatorImpl<ScalarT, IdxT>::real_type real_type;
+template <class ScalarT, typename IdxT>
+Load<ScalarT, IdxT>::~Load()
+{
+}
 
-        BusSlack();
-        BusSlack(ScalarT V, ScalarT theta);
-        virtual ~BusSlack();
-        virtual int evaluateResidual();
-        virtual int evaluateAdjointResidual();
+/*!
+ * @brief allocate method computes sparsity pattern of the Jacobian.
+ */
+template <class ScalarT, typename IdxT>
+int Load<ScalarT, IdxT>::allocate()
+{
+    return 0;
+}
 
-        /// @todo Should slack bus allow changing voltage?
-        virtual ScalarT& V()
-        {
-            return V_;
-        }
+/**
+ * Initialization of the grid model
+ */
+template <class ScalarT, typename IdxT>
+int Load<ScalarT, IdxT>::initialize()
+{
+    return 0;
+}
 
-        virtual const ScalarT& V() const
-        {
-            return V_;
-        }
+/*
+ * \brief Identify differential variables
+ */
+template <class ScalarT, typename IdxT>
+int Load<ScalarT, IdxT>::tagDifferentiable()
+{
+    return 0;
+}
 
-        /// @todo Should slack bus allow changing phase?
-        virtual ScalarT& theta()
-        {
-            return theta_;
-        }
+/**
+ * @brief Contributes to the bus residual.
+ *
+ * Must be connected to a PQ bus.
+ */
+template <class ScalarT, typename IdxT>
+int Load<ScalarT, IdxT>::evaluateResidual()
+{
+    bus_->P() += P_;
+    bus_->Q() += Q_;
+    return 0;
+}
 
-        virtual const ScalarT& theta() const
-        {
-            return theta_;
-        }
+template <class ScalarT, typename IdxT>
+int Load<ScalarT, IdxT>::evaluateJacobian()
+{
+    return 0;
+}
 
-        virtual ScalarT& P()
-        {
-            return P_;
-        }
+template <class ScalarT, typename IdxT>
+int Load<ScalarT, IdxT>::evaluateIntegrand()
+{
+    return 0;
+}
 
-        virtual const ScalarT& P() const
-        {
-            return P_;
-        }
+template <class ScalarT, typename IdxT>
+int Load<ScalarT, IdxT>::initializeAdjoint()
+{
+    return 0;
+}
 
-        virtual ScalarT& Q()
-        {
-            return Q_;
-        }
+template <class ScalarT, typename IdxT>
+int Load<ScalarT, IdxT>::evaluateAdjointResidual()
+{
+    return 0;
+}
 
-        virtual const ScalarT& Q() const
-        {
-            return Q_;
-        }
-
-        /// @todo Should slack bus allow changing voltage?
-        virtual ScalarT& lambdaP()
-        {
-            return VB_;
-        }
-
-        virtual const ScalarT& lambdaP() const
-        {
-            return VB_;
-        }
-
-        /// @todo Should slack bus allow changing phase?
-        virtual ScalarT& lambdaQ()
-        {
-            return thetaB_;
-        }
-
-        virtual const ScalarT& lambdaQ() const
-        {
-            return thetaB_;
-        }
-
-        virtual ScalarT& PB()
-        {
-            return PB_;
-        }
-
-        virtual const ScalarT& PB() const
-        {
-            return PB_;
-        }
-
-        virtual ScalarT& QB()
-        {
-            return QB_;
-        }
-
-        virtual const ScalarT& QB() const
-        {
-            return QB_;
-        }
-
-    private:
-        ScalarT V_;
-        ScalarT theta_;
-        ScalarT P_;
-        ScalarT Q_;
-
-        ScalarT VB_;
-        ScalarT thetaB_;
-        ScalarT PB_;
-        ScalarT QB_;
-
-    }; // class BusSlack
-
-} // namespace ModelLib
+template <class ScalarT, typename IdxT>
+int Load<ScalarT, IdxT>::evaluateAdjointIntegrand()
+{
+    return 0;
+}
 
 
-#endif // _BUS_SLACK_HPP_
+
+
+// Available template instantiations
+template class Load<double, long int>;
+template class Load<double, size_t>;
+
+
+} //namespace ModelLib
+

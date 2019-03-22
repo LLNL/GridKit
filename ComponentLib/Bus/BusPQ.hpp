@@ -138,22 +138,22 @@ namespace ModelLib
             return f_[1];
         }
 
-        virtual ScalarT& VB()
+        virtual ScalarT& lambdaP()
         {
             return yB_[0];
         }
 
-        virtual const ScalarT& VB() const
+        virtual const ScalarT& lambdaP() const
         {
             return yB_[0];
         }
 
-        virtual ScalarT& thetaB()
+        virtual ScalarT& lambdaQ()
         {
             return yB_[1];
         }
 
-        virtual const ScalarT& thetaB() const
+        virtual const ScalarT& lambdaQ() const
         {
             return yB_[1];
         }

@@ -128,10 +128,10 @@ namespace ModelLib
         virtual ScalarT& Q() = 0;
         virtual const ScalarT& Q() const = 0;
 
-        virtual ScalarT& VB() = 0;
-        virtual const ScalarT& VB() const = 0;
-        virtual ScalarT& thetaB() = 0;
-        virtual const ScalarT& thetaB() const = 0;
+        virtual ScalarT& lambdaP() = 0;
+        virtual const ScalarT& lambdaP() const = 0;
+        virtual ScalarT& lambdaQ() = 0;
+        virtual const ScalarT& lambdaQ() const = 0;
         virtual ScalarT& PB() = 0;
         virtual const ScalarT& PB() const = 0;
         virtual ScalarT& QB() = 0;

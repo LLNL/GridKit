@@ -55,9 +55,5 @@
 # endorsement purposes.
 #
 
-add_subdirectory(Bus)
-add_subdirectory(Generator2)
-add_subdirectory(Generator4)
-add_subdirectory(Generator4Governor)
-add_subdirectory(Load)
-set(component_models ${component_models} PARENT_SCOPE)
+add_library(Generator4Governor Generator4Governor.cpp)
+set(component_models ${component_models} Generator4Governor PARENT_SCOPE)

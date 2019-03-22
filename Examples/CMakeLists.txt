@@ -57,4 +57,5 @@
 
 add_subdirectory(AdjointSensitivity)
 add_subdirectory(DynamicConstrainedOpt)
+add_subdirectory(GenConstLoad)
 add_subdirectory(GenInfiniteBus)

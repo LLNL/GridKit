@@ -51,13 +51,9 @@
 # government or Lawrence Livermore National Security, LLC. The views and
 # opinions of authors expressed herein do not necessarily state or reflect
 # those of the United States government or Lawrence Livermore National
-# Security, LLC, and shall not be used for advertising or product
+# Security, LLC, and shall not be used for advertising or product 
 # endorsement purposes.
 #
 
-add_subdirectory(Bus)
-add_subdirectory(Generator2)
-add_subdirectory(Generator4)
-add_subdirectory(Generator4Governor)
-add_subdirectory(Load)
-set(component_models ${component_models} PARENT_SCOPE)
+add_library(Load Load.cpp)
+set(component_models ${component_models} Load PARENT_SCOPE)

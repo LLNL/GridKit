@@ -55,9 +55,6 @@
 # endorsement purposes.
 #
 
-add_subdirectory(Bus)
-add_subdirectory(Generator2)
-add_subdirectory(Generator4)
-add_subdirectory(Generator4Governor)
-add_subdirectory(Load)
-set(component_models ${component_models} PARENT_SCOPE)
+add_executable(genconstload GenConstLoad.cpp)
+target_link_libraries(genconstload Generator4Governor Bus Load ${solver_libs})
+install(TARGETS genconstload RUNTIME DESTINATION bin)
