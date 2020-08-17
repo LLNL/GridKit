@@ -114,12 +114,12 @@ namespace ModelLib
             return size_opt_;
         }
 
-        virtual void updateTime(real_type t, real_type a)
-        {
-            time_ = t;
-            alpha_ = a;
-            //std::cout << "t = " << t << "\n";
-        }
+        // virtual void updateTime(real_type t, real_type a)
+        // {
+        //     time_ = t;
+        //     alpha_ = a;
+        //     std::cout << "updateTime: t = " << time_ << "\n";
+        // }
 
         virtual void setTolerances(real_type& rtol, real_type& atol) const
         {

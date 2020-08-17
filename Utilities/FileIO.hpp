@@ -57,72 +57,61 @@
  *
  */
 
-#ifndef _LOAD_HPP_
-#define _LOAD_HPP_
+#pragma once
 
-#include <ModelEvaluatorImpl.hpp>
 #include <vector>
+#include <fstream>
+#include <sstream>
 
-namespace ModelLib
+namespace GridKit
 {
-    template <class ScalarT, typename IdxT> class BaseBus;
-}
-
-
-namespace ModelLib
-{
-     /*!
-     * @brief Implementation of a power grid.
-     *
-     */
-    template  <class ScalarT, typename IdxT>
-    class Load : public ModelEvaluatorImpl<ScalarT, IdxT>
+    template <typename ScalarT>
+    void setLookupTable(std::vector<std::vector<ScalarT>>& table, std::string filename, ScalarT& ti, ScalarT& tf)
     {
-        using ModelEvaluatorImpl<ScalarT, IdxT>::size_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::nnz_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::time_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::alpha_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::y_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::yp_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::tag_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::f_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::g_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::yB_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::ypB_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::fB_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::gB_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::param_;
-
-        typedef typename ModelEvaluatorImpl<ScalarT, IdxT>::real_type real_type;
-        typedef BaseBus<ScalarT, IdxT> bus_type;
-
-    public:
-        Load(bus_type* bus, ScalarT P, ScalarT Q);
-        virtual ~Load();
-
-        int allocate();
-        int initialize();
-        int tagDifferentiable();
-        int evaluateResidual();
-        int evaluateJacobian();
-        int evaluateIntegrand();
-
-        int initializeAdjoint();
-        int evaluateAdjointResidual();
-        //int evaluateAdjointJacobian();
-        int evaluateAdjointIntegrand();
-
-        void updateTime(real_type t, real_type a)
+        std::ifstream idata(filename);
+        std::string line;
+        int oldwordcount = -1;
+        while (std::getline(idata, line))
         {
-            time_ = t;
-            alpha_ = a;
+            std::istringstream iss(line);
+            double word;
+            int wordcount = 0;
+            std::vector<double> row;
+            while (iss >> word) 
+            {
+                row.push_back(word);
+                ++wordcount; 
+            }
+            table.push_back(std::move(row));
+            if(oldwordcount != -1)
+            {
+                if(oldwordcount != wordcount)
+                {
+                    std::cerr << "Corrupted input data!\n";
+                    return;
+                }
+            }
+            else
+            {
+                oldwordcount = wordcount;
+            }
         }
-        
-    private:
-        ScalarT P_;
-        ScalarT Q_;
-        bus_type* bus_;
-    };
-}
+        size_t N = table.size();
+        ti = table[0][0];
+        tf = table[N-1][0];
+    }
 
-#endif // _LOAD_HPP_
+    template <typename ScalarT>
+    void printLookupTable(std::vector<std::vector<ScalarT>> const& table)
+    {
+        for(size_t i=0; i<table.size(); ++i)
+        {
+            for(size_t j=0; j<table[i].size(); ++j)
+            {
+                std::cout << table[i][j] << " ";
+            }
+            std::cout << "\n";
+        }
+    }
+
+} // namespace GridKit
