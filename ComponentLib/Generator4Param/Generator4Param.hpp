@@ -57,35 +57,29 @@
  *
  */
 
-#ifndef _BASE_BUS_HPP_
-#define _BASE_BUS_HPP_
+#ifndef _GENERATOR_4_H_
+#define _GENERATOR_4_H_
 
 #include <ModelEvaluatorImpl.hpp>
 
 namespace ModelLib
 {
+    template <class ScalarT, typename IdxT> class BaseBus;
+}
+
+namespace ModelLib
+{
     /*!
-     * @brief Base class for all power flow buses.
+     * @brief Implementation of a fourth order generator model.
      *
-     * Derived bus types:
-     *   0 - swing bus (V and theta are constants)
-     *   1 - PV bus    (P and V are constants)
-     *   2 - PQ bus    (P and Q are constants)
-     *
-     * @todo Consider static instead of dynamic polymorphism for
-     * bus types. Create Bus class that takes template parameter
-     * BusType.
      */
     template  <class ScalarT, typename IdxT>
-    class BaseBus : public ModelEvaluatorImpl<ScalarT, IdxT>
+    class Generator4Param : public ModelEvaluatorImpl<ScalarT, IdxT>
     {
-    protected:
         using ModelEvaluatorImpl<ScalarT, IdxT>::size_;
         using ModelEvaluatorImpl<ScalarT, IdxT>::nnz_;
         using ModelEvaluatorImpl<ScalarT, IdxT>::time_;
         using ModelEvaluatorImpl<ScalarT, IdxT>::alpha_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::rtol_;
-        using ModelEvaluatorImpl<ScalarT, IdxT>::atol_;
         using ModelEvaluatorImpl<ScalarT, IdxT>::y_;
         using ModelEvaluatorImpl<ScalarT, IdxT>::yp_;
         using ModelEvaluatorImpl<ScalarT, IdxT>::tag_;
@@ -99,48 +93,187 @@ namespace ModelLib
         using ModelEvaluatorImpl<ScalarT, IdxT>::param_up_;
         using ModelEvaluatorImpl<ScalarT, IdxT>::param_lo_;
 
-    public:
         typedef typename ModelEvaluatorImpl<ScalarT, IdxT>::real_type real_type;
+        typedef BaseBus<ScalarT, IdxT> bus_type;
 
-        BaseBus(){}
-        virtual ~BaseBus(){}
+    public:
+        Generator4Param(BaseBus<ScalarT, IdxT>* bus, ScalarT P0 = 1.0, ScalarT Q0 = 0.0);
+        virtual ~Generator4Param();
 
-        // Set defaults for ModelEvaluator methods
-        virtual int allocate() { return 0;}
-        virtual int initialize() { return 0;}
-        virtual int tagDifferentiable() { return 0;}
-        virtual int evaluateResidual() { return 0;}
-        virtual int evaluateJacobian() { return 0;}
-        virtual int evaluateIntegrand() { return 0;}
+        int allocate();
+        int initialize();
+        int tagDifferentiable();
+        int evaluateResidual();
+        int evaluateJacobian();
+        int evaluateIntegrand();
 
-        virtual int initializeAdjoint() { return 0;}
-        virtual int evaluateAdjointResidual() { return 0;}
-        //virtual int evaluateAdjointJacobian() { return 0;}
-        virtual int evaluateAdjointIntegrand() { return 0;}
-        virtual void updateTime(real_type, real_type) {} // <- throw exception here
+        int initializeAdjoint();
+        int evaluateAdjointResidual();
+        //int evaluateAdjointJacobian();
+        int evaluateAdjointIntegrand();
 
-        // Pure virtual methods specific to Bus types
-        virtual ScalarT& V() = 0;
-        virtual const ScalarT& V() const = 0;
-        virtual ScalarT& theta() = 0;
-        virtual const ScalarT& theta() const = 0;
-        virtual ScalarT& P() = 0;
-        virtual const ScalarT& P() const = 0;
-        virtual ScalarT& Q() = 0;
-        virtual const ScalarT& Q() const = 0;
+        void updateTime(real_type t, real_type a)
+        {
+            time_ = t;
+            alpha_ = a;
+        }
 
-        virtual ScalarT& lambdaP() = 0;
-        virtual const ScalarT& lambdaP() const = 0;
-        virtual ScalarT& lambdaQ() = 0;
-        virtual const ScalarT& lambdaQ() const = 0;
-        virtual ScalarT& PB() = 0;
-        virtual const ScalarT& PB() const = 0;
-        virtual ScalarT& QB() = 0;
-        virtual const ScalarT& QB() const = 0;
+        // Inline accesor functions
+        ScalarT& V()
+        {
+            return bus_->V();
+        }
 
-    }; // class BaseBus
+        const ScalarT& V() const
+        {
+            return bus_->V();
+        }
+
+        ScalarT& theta()
+        {
+            return bus_->theta();
+        }
+
+        const ScalarT& theta() const
+        {
+            return bus_->theta();
+        }
+
+        ScalarT& P()
+        {
+            return bus_->P();
+        }
+
+        const ScalarT& P() const
+        {
+            return bus_->P();
+        }
+
+        ScalarT& Q()
+        {
+            return bus_->Q();
+        }
+
+        const ScalarT& Q() const
+        {
+            return bus_->Q();
+        }
+
+        ScalarT trajectoryPenalty(ScalarT t) const;
+        ScalarT trajectoryPenaltyDerEqp(ScalarT t) const;
+        ScalarT trajectoryPenaltyDerEdp(ScalarT t) const;
+
+        std::vector<std::vector<ScalarT>>& getLookupTable()
+        {
+            return table_;
+        } 
+
+        std::vector<std::vector<ScalarT>> const& getLookupTable() const
+        {
+            return table_;
+        } 
+
+    private:
+        const ScalarT& H() const
+        {
+            return param_[0];
+        }
+
+        const ScalarT& Pm() const
+        {
+            return Pm_;
+            // return param_[0];
+        }
+
+        const ScalarT& Ef() const
+        {
+            return Ef_;
+            // return param_[1];
+        }
+
+        ScalarT Pg();
+        ScalarT Qg();
+
+    private:
+        //
+        // Private inlined accessor methods
+        //
+
+        const ScalarT dotDelta() const
+        {
+            return yp_[0];
+        }
+
+        const ScalarT dotOmega() const
+        {
+            return yp_[1];
+        }
+
+        const ScalarT dotEdp() const
+        {
+            return yp_[2];
+        }
+
+        const ScalarT dotEqp() const
+        {
+            return yp_[3];
+        }
+
+        const ScalarT delta() const
+        {
+            return y_[0];
+        }
+
+        const ScalarT omega() const
+        {
+            return y_[1];
+        }
+
+        const ScalarT Edp() const
+        {
+            return y_[2];
+        }
+
+        const ScalarT Eqp() const
+        {
+            return y_[3];
+        }
+
+        const ScalarT Id() const
+        {
+            return y_[4];
+        }
+
+        const ScalarT Iq() const
+        {
+            return y_[5];
+        }
+
+    private:
+        real_type H_;    ///< Inertia constant [s]
+        real_type D_;    ///< Damping constant [pu]
+        real_type Xq_;   ///< q-axis synchronous reactance [pu]
+        real_type Xd_;   ///< d-axis synchronous reactance [pu]
+        real_type Xqp_;  ///< q-axis transient reactance [pu]
+        real_type Xdp_;  ///< d-axis transient reactance [pu]
+        real_type Rs_;   ///< stator armature resistance [pu]
+        real_type Tq0p_; ///< q-axis open circuit transient time constant [s]
+        real_type Td0p_; ///< d-axis open circuit transient time constant [s]
+        real_type Ef_;
+        real_type Pm_;
+        real_type omega_s_;
+        real_type omega_b_;
+
+        ScalarT P0_;
+        ScalarT Q0_;
+
+        bus_type* bus_;
+
+        /// Look-up table data. @todo This should be part of a separate model.
+        std::vector<std::vector<ScalarT>> table_;
+    };
 
 } // namespace ModelLib
 
 
-#endif // _BASE_BUS_HPP_
+#endif // _GENERATOR_4_H_

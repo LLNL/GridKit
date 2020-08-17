@@ -158,6 +158,7 @@ namespace AnalysisManager
             }
 
             void printOutput(realtype t);
+            void printSpecial(realtype t, N_Vector x);
             void printFinalStats();
 
         private:

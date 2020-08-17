@@ -112,6 +112,12 @@ namespace ModelLib
         //int evaluateAdjointJacobian();
         int evaluateAdjointIntegrand();
 
+        void updateTime(real_type t, real_type a)
+        {
+            time_ = t;
+            alpha_ = a;
+        }
+
         // Inline accesor functions
         ScalarT& V()
         {

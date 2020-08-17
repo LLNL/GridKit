@@ -224,10 +224,12 @@ namespace Sundials
 
         /* In loop, call IDASolve, print results, and test for error.
          *     Break out of loop when NOUT preset output times have been reached. */
+        //printOutput(0.0);
         while(nout > iout)
         {
             retval = IDASolve(solver_, tout, &tret, yy_, yp_, IDA_NORMAL);
             checkOutput(retval, "IDASolve");
+            //printOutput(tout); 
 
             if (retval == IDA_SUCCESS)
             {
@@ -235,7 +237,7 @@ namespace Sundials
                 tout += dt;
             }
         }
-
+        //std::cout << "\n";
         return retval;
     }
 
@@ -305,10 +307,14 @@ namespace Sundials
 
         real_type dt = tf/nout;
         real_type tout = dt;
+        //printOutput(0.0);
+        //printSpecial(0.0, yy_);
         for(int i = 0; i < nout; ++i)
         {
             retval = IDASolve(solver_, tout, &tret, yy_, yp_, IDA_NORMAL);
             checkOutput(retval, "IDASolve");
+            //printSpecial(tout, yy_);
+            //printOutput(tout); 
 
             if (retval == IDA_SUCCESS)
             {
@@ -607,14 +613,33 @@ namespace Sundials
     template <class ScalarT, typename IdxT>
     void Ida<ScalarT, IdxT>::printOutput(realtype t)
     {
-        realtype *yval = N_VGetArrayPointer_Serial(yy_);
+        realtype *yval  = N_VGetArrayPointer_Serial(yy_);
+        realtype *ypval = N_VGetArrayPointer_Serial(yp_);
 
         std::cout << std::setprecision(5) << std::setw(7) << t << " ";
         for (IdxT i = 0; i < model_->size(); ++i)
         {
             std::cout << yval[i] << " ";
         }
+        for (IdxT i = 0; i < model_->size(); ++i)
+        {
+            std::cout << ypval[i] << " ";
+        }
         std::cout << "\n";
+    }
+
+    template <class ScalarT, typename IdxT>
+    void Ida<ScalarT, IdxT>::printSpecial(realtype t, N_Vector y)
+    {
+        realtype *yval = N_VGetArrayPointer_Serial(y);
+        int N = N_VGetLength_Serial(y);
+        std::cout << "{";
+        std::cout << std::setprecision(5) << std::setw(7) << t;
+        for (IdxT i = 0; i < N; ++i)
+        {
+            std::cout << ", " << yval[i];
+        }
+        std::cout << "},\n";
     }
 
     template <class ScalarT, typename IdxT>
