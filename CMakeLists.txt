@@ -55,11 +55,9 @@
 # endorsement purposes.
 #
 
-
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.12)
 
 project(gridkit)
-
 
 set(component_models
   #generic_model
@@ -71,20 +69,27 @@ set(solver_libs
 
 set(CMAKE_MACOSX_RPATH 1)
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/config)
+
+# TODO: Probably beter to set a debug interface target
 set(CMAKE_CXX_FLAGS_DEBUG "-Wall -O0 -g")
+
 set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_INSTALL_PREFIX "/usr/local")
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 option(BUILD_SHARED_LIBS:BOOL "Build shared libraries" ON)
 
-include(FindSUNDIALS)
 include(FindIpopt)
+set(CMAKE_INSTALL_RPATH  ${IPOPT_LIBRARY_DIR} ${CMAKE_INSTALL_RPATH})
+
+include(FindSUNDIALS)
+set(CMAKE_INSTALL_RPATH  ${SUNDIALS_LIBRARY_DIR} ${CMAKE_INSTALL_RPATH})
+
 include(FindSuiteSparse)
+set(CMAKE_INSTALL_RPATH  ${SUITESPARSE_LIBRARY_DIR} ${CMAKE_INSTALL_RPATH})
 
 include_directories(${SUITESPARSE_INCLUDE_DIR} ${SUNDIALS_INCLUDE_DIR} ${IPOPT_INCLUDE_DIR})
+
 add_subdirectory(ComponentLib)
 add_subdirectory(Solver)
-
 add_subdirectory(Examples)
