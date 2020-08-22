@@ -55,27 +55,14 @@
 # endorsement purposes. 
 # 
 
-# Find SUNDIALS installation path
-find_path (SUNDIALS_DIR NAMES include/sundials/sundials_config.h HINTS ~/local/sundials)
-message (STATUS "Found SUNDIALS in ${SUNDIALS_DIR}")
+#[[
 
-# Find SUNDIALS header path and ensure all needed files are there
-find_path(SUNDIALS_INCLUDE_DIR
-  nvector/nvector_serial.h
-  sundials/sundials_dense.h
-  sundials/sundials_sparse.h
-  sundials/sundials_types.h
-  idas/idas.h
-  idas/idas_dense.h
-  idas/idas_band.h
-  idas/idas_klu.h
-  idas/idas_impl.h
-  HINTS ${SUNDIALS_DIR}/include
-)
-message (STATUS "Found SUNDIALS headers in ${SUNDIALS_INCLUDE_DIR}")
+Finds Sundials include directory and libraries and exports target `SUNDIALS`
 
-# Assume SUNDIALS lib directory is in the same place as the include directory
-set(SUNDIALS_LIBRARY_DIR ${SUNDIALS_DIR}/lib)
+User may set:
+- SUNDIALS_ROOT_DIR
+
+]]
 
 # SUNDIALS modules needed for the build
 # The order matters in case of static build!
@@ -84,17 +71,63 @@ set(SUNDIALS_MODULES
   sundials_nvecserial 
 )
 
-# Find each SUNDIALS module and add it to the list of libraries to link
-set(SUNDIALS_LIBRARY)
-foreach(mod ${SUNDIALS_MODULES})
-  find_library(SUNDIALS_${mod}
-    NAMES ${mod}
-    HINTS ${SUNDIALS_LIBRARY_DIR}
-  )
-  if(SUNDIALS_${mod})
-    set(SUNDIALS_LIBRARY ${SUNDIALS_LIBRARY} ${SUNDIALS_${mod}})
-  else()
-    # unset ${SUNDIALS_LIBRARY_DIR} and ask user to supply it
+find_library(SUNDIALS_LIBRARY
+  NAMES
+  ${SUNDIALS_MODULES}
+  PATHS
+  ${SUNDIALS_ROOT_DIR} ${SUNDIALS_DIR} $ENV{SUNDIALS_DIR}
+  ENV LD_LIBRARY_PATH ENV DYLD_LIBRARY_PATH
+  PATH_SUFFIXES
+  lib)
+
+if(SUNDIALS_LIBRARY)
+  get_filename_component(SUNDIALS_LIBRARY_DIR ${SUNDIALS_LIBRARY} DIRECTORY CACHE)
+  set(SUNDIALS_LIBRARY_DIR CACHE PATH "Path to Sundials library")
+  if(NOT SUNDIALS_ROOT_DIR)
+    get_filename_component(SUNDIALS_ROOT_DIR ${SUNDIALS_LIBRARY_DIR} CACHE)
   endif()
-endforeach()
-message (STATUS "Found SUNDIALS libraries ${SUNDIALS_LIBRARY}")
+endif()
+
+# Find SUNDIALS header path and ensure all needed files are there
+find_path(SUNDIALS_INCLUDE_DIR
+  NAMES
+  nvector/nvector_serial.h
+  sundials/sundials_dense.h
+  sundials/sundials_sparse.h
+  sundials/sundials_types.h
+  idas/idas.h
+  idas/idas_ls.h
+  PATHS 
+  ${SUNDIALS_ROOT_DIR} ${SUNDIALS_DIR}
+  PATH_SUFFIXES
+  include
+)
+
+if(SUNDIALS_LIBRARY AND SUNDIALS_INCLUDE_DIR)
+set(SUNDIALS_INCLUDE_DIR CACHE PATH "Path to Sundials Include dir")
+  # Find each SUNDIALS module and add it to the list of libraries to link
+  unset(SUNDIALS_LIBRARY CACHE)
+  foreach(mod ${SUNDIALS_MODULES})
+    find_library(SUNDIALS_${mod}
+      NAMES ${mod}
+      HINTS ${SUNDIALS_LIBRARY_DIR}
+    )
+    if(SUNDIALS_${mod})
+      set(SUNDIALS_LIBRARY ${SUNDIALS_LIBRARY} ${SUNDIALS_${mod}})
+    else()
+      # unset ${SUNDIALS_LIBRARY_DIR} and ask user to supply it
+    endif()
+  endforeach()
+  message (STATUS "Found Sundials libraries ${SUNDIALS_LIBRARY}")
+else()
+  if(NOT SUNDIALS_ROOT_DIR)
+    message(STATUS "Sundials root dir not found! Please provide correct filepath.")
+    set(SUNDIALS_ROOT_DIR CACHE PATH "Path to SUNDIALS installation root.")
+    unset(SUNDIALS_LIBRARY CACHE)
+    unset(SUNDIALS_INCLUDE_DIR CACHE)
+  elseif(NOT SUNDIALS_LIBRARY)
+    message(STATUS "Sundials library not found! Please provide correct filepath.")
+  elseif(NOT SUNDIALS_INCLUDE_DIR)
+    message(STATUS "Sundials include dir not found! Please provide correct filepath.")
+  endif()
+endif()
