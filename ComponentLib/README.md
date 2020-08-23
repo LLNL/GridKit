@@ -69,7 +69,7 @@ Q_{i}= \vert V_{i} \vert \sum_{j=1}^{n} \vert V_{j} \vert (G_{ij}\sin\theta_{ij}
 
 
 <div align="center">
-   <img align="center" src="https://gitlab.pnnl.gov/gridkit/gridkit/-/raw/my_develop_new/Documentation/Figures/example1.jpg">
+   <img align="center" src="../Documentation/Figures/example1.jpg">
    
    
   Figure 1: 3 bus example
