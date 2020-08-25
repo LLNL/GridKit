@@ -1,4 +1,4 @@
-# GridKit
+# GridKit™
 
 This is experimental code for prototyping interfaces for dynamic 
 simulations, sensitivity analysis and optimization. Target applications 
@@ -7,10 +7,10 @@ in other areas without major modifications.
 
 ## Installation Guide
 
-This guide is intended to give a guideline for installing GridKit and it's dependencies.
+This guide is intended to give a guideline for installing GridKit™ and it's dependencies.
 
 ### Dependencies
-You should have all of the following installed before installing GridKit
+You should have all of the following installed before installing GridKit™
 - A version of
 	- Ipopt >= 3.x
 	- Sundials >= 4.x
@@ -19,7 +19,7 @@ You should have all of the following installed before installing GridKit
 - C++ 11 compiler
 
 ### Installing
-It is recommended that you build and install GridKit in seperate directories in order to keep the main working tree clean, and so we suggest using a file structure like the following:
+It is recommended that you build and install GridKit™ in seperate directories in order to keep the main working tree clean, and so we suggest using a file structure like the following:
 ```
 project_dir
 └───source_dir  
