@@ -138,8 +138,159 @@ To solve the power flow, there is no need to write equations for the bus 1(slack
 ```math
 0.8=-10\vert V_{2} \vert \cos(\theta_{2})+22\vert V_{2} \vert^2 -13.2\vert V_{2} \vert \cos(\theta_{2}-\theta_{3})
 ```
+Now, 
 
-Using the Newton-Raphson method, solution is:
+```math 
+f_{1}(\theta_{2},\theta_{3},\vert V_{2} \vert)=-2.5-10\vert V_{2} \vert \sin(\theta_{2})-13.2\vert V_{2} \vert \sin(\theta_{2}-\theta_{3})
+```
+```math
+f_{2}(\theta_{2},\theta_{3},\vert V_{2} \vert)=2-16.5 \sin(\theta_{3})-13.2\vert V_{2} \vert \sin(\theta_{3}-\theta_{2})
+```
+```math
+f_{3}(\theta_{2},\theta_{3},\vert V_{2} \vert)=0.8+10\vert V_{2} \vert \cos(\theta_{2})-22\vert V_{2} \vert^2 +13.2\vert V_{2} \vert \cos(\theta_{2}-\theta_{3})
+```
+
+To find the solution using the NR method, following set of equations needs to be solved:
+
+```math
+\begin{bmatrix}
+\dfrac{\partial P_{2}}{\partial \theta_{2}} & \dfrac{\partial P_{2}}{\partial \theta_{3}} & \dfrac{\partial P_{2}}{\partial \vert V_{2} \vert}\\
+\dfrac{\partial P_{3}}{\partial \theta_{2}} & \dfrac{\partial P_{3}}{\partial \theta_{3}} & \dfrac{\partial P_{3}}{\partial \vert V_{2} \vert}\\
+\dfrac{\partial Q_{2}}{\partial \theta_{2}} & \dfrac{\partial Q_{2}}{\partial \theta_{3}} & \dfrac{\partial Q_{2}}{\partial \vert V_{2} \vert}
+\end{bmatrix}
+\begin{bmatrix}
+\Delta\theta_{2}(i) \\
+\Delta\theta_{3}(i) \\
+\Delta\vert V_{2} \vert (i)
+\end{bmatrix}=
+\begin{bmatrix}
+\Delta P_{2}(i) \\
+\Delta P_{3}(i) \\
+\Delta Q_{2}(i)
+\end{bmatrix}
+```
+where:
+
+```math
+\begin{aligned}
+\dfrac{\partial P_{2}}{\partial \theta_{2}}=10\vert V_{2} \vert \cos(\theta_{2})+13.2\vert V_{2} \vert \cos(\theta_{2}-\theta_{3}) \\
+\dfrac{\partial P_{2}}{\partial \theta_{3}}=-13.2\vert V_{2} \vert \cos(\theta_{2}-\theta_{3}) \\
+\dfrac{\partial P_{2}}{\partial \vert V_{2} \vert}=10 \sin(\theta_{2})+13.2 \sin(\theta_{2}-\theta_{3}) \\
+\end{aligned}
+```
+```math
+\begin{aligned}
+\dfrac{\partial P_{3}}{\partial \theta_{2}}=-13.2\vert V_{2} \vert \cos(\theta_{3}-\theta_{2}) \\
+\dfrac{\partial P_{3}}{\partial \theta_{3}}=16.5 \cos(\theta_{3})+13.2\vert V_{2} \vert \cos(\theta_{3}-\theta_{2}) \\
+\dfrac{\partial P_{3}}{\partial \vert V_{2} \vert}=13.2 \sin(\theta_{3}-\theta_{2}) \\
+\end{aligned}
+```
+```math
+\begin{aligned}
+\dfrac{\partial Q_{2}}{\partial \theta_{2}}=10\vert V_{2} \vert \sin(\theta_{2})+13.2\vert V_{2} \vert \cos(\theta_{2}-\theta_{3}) \\
+\dfrac{\partial Q_{2}}{\partial \theta_{3}}=13.2\vert V_{2} \vert \sin(\theta_{2}-\theta_{3}) \\
+\dfrac{\partial Q_{2}}{\partial \vert V_{2} \vert}=-10 \cos(\theta_{2})+44 \vert V_{2} \vert -13.2 \cos(\theta_{2}-\theta_{3}) \\
+\end{aligned}
+```
+Interation 0:
+
+The intial values for the variables using a 'flat start' are:
+```math
+\begin{bmatrix}
+\theta_{2}(0) \\
+\theta_{3}(0) \\
+\vert V_{2} \vert (0)
+\end{bmatrix}=
+\begin{bmatrix}
+0 \\
+0 \\
+1 \\
+\end{bmatrix}
+```
+Next we can calculate following:
+```math
+\begin{bmatrix}
+P_{2}(0) \\
+P_{3}(0) \\
+Q_{2}(0)
+\end{bmatrix}=
+\begin{bmatrix}
+0 \\
+0 \\
+-1.2 \\
+\end{bmatrix}
+```
+and:
+```math
+\Delta y=
+\begin{bmatrix}
+\Delta P_{2}(i) \\
+\Delta P_{3}(i) \\
+\Delta Q_{2}(i)
+\end{bmatrix}=
+\begin{bmatrix}
+-2.5-0 \\
+2-0 \\
+0.8-(-1.2) \\
+\end{bmatrix}=
+\begin{bmatrix}
+-2.5 \\
+2 \\
+2
+\end{bmatrix}
+```
+Also, Jacobian matrix in step zero is:
+```math
+J(0)=
+\begin{bmatrix}
+23.2 & -13.2 & 0\\
+-13.2 & 29.7 & 0 \\
+0 & 0 & 20.8
+\end{bmatrix}
+```
+From here we can calculate x residuals from:
+```math
+J(0) \Delta x=\Delta y
+```
+```math
+\Delta x(0)=
+\begin{bmatrix}
+\Delta \theta_{2}(0) \\
+\Delta \theta_{3}(0) \\
+\Delta \vert V_{2} \vert (0)
+\end{bmatrix}=
+\begin{bmatrix}
+-0.0929 rad \\
+0.026 rad \\
+0.0962 \\
+\end{bmatrix}=
+\begin{bmatrix}
+-5.3256 \\
+1.4914 \\
+0.0962
+\end{bmatrix}
+```
+New value of x is then:
+```math
+x(1)=
+\begin{bmatrix}
+\theta_{2}(1) \\
+\theta_{3}(1) \\
+\vert V_{2} \vert (1)
+\end{bmatrix}=
+\begin{bmatrix}
+0+(-5.3256) \\
+0+1.4914 \\
+1+0.0962
+\end{bmatrix}=
+\begin{bmatrix}
+-5.3256 \\
+1.4914 \\
+1.0962
+\end{bmatrix}
+```
+
+After 3 iterations, using the Newton-Raphson method, solution is:
 ```math
 \theta_{2}=-4.882\degree \\
 \theta_{3}=1.461\degree \\
