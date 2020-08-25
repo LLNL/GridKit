@@ -71,13 +71,14 @@
 #include <IpSolveStatistics.hpp>
 #include <Solver/Optimization/DynamicObjective.hpp>
 #include <Solver/Optimization/DynamicConstraint.hpp>
-
+#include <Utilities/Testing.hpp>
 
 int main()
 {
     using namespace ModelLib;
     using namespace AnalysisManager::Sundials;
     using namespace AnalysisManager;
+    using namespace GridKit::Testing;
 
     // Create a bus
     BaseBus<double, size_t>* bus = new BusPQ<double, size_t>(1.0, 0.0);
@@ -114,7 +115,11 @@ int main()
     idas->saveInitialCondition();
 
     // Set integration time for dynamic constrained optimization
-    idas->setIntegrationTime(t_init, t_final, 100);
+    idas->setIntegrationTime(t_init, t_final, 250);
+
+    // Guess optimization parameter values
+    double T2 =  0.15;
+    double K  = 16.0;
 
     // Create an instance of the IpoptApplication
     Ipopt::SmartPtr<Ipopt::IpoptApplication> ipoptApp = IpoptApplicationFactory();
@@ -127,17 +132,24 @@ int main()
         return (int) status;
     }
 
+    // Set solver tolerance
+    const double tol = 1e-4; 
+
     // Configure Ipopt application
     ipoptApp->Options()->SetStringValue("hessian_approximation", "limited-memory");
-    ipoptApp->Options()->SetNumericValue("tol", 1e-4);
-    ipoptApp->Options()->SetIntegerValue("print_level", 3);
+    ipoptApp->Options()->SetNumericValue("tol", tol);
+    ipoptApp->Options()->SetIntegerValue("print_level", 5);
 
     // Create interface to Ipopt solver
-    Ipopt::SmartPtr<Ipopt::TNLP> ipoptInterface =
+    Ipopt::SmartPtr<Ipopt::TNLP> ipoptDynamicObjectiveInterface =
         new IpoptInterface::DynamicObjective<double, size_t>(idas);
 
+    // Initialize problem
+    model->param()[0] = T2;
+    model->param()[1] = K;
+
     // Solve the problem
-    status = ipoptApp->OptimizeTNLP(ipoptInterface);
+    status = ipoptApp->OptimizeTNLP(ipoptDynamicObjectiveInterface);
 
     if (status == Ipopt::Solve_Succeeded) {
         // Print result
@@ -151,6 +163,16 @@ int main()
         std::cout << "The final value of the objective function G(T2,K) = "
                   << ipoptApp->Statistics()->FinalObjective() << "\n\n";
     }
+
+    // Compare results of the two optimization methods
+    int retval = 
+        isEqual(ipoptApp->Statistics()->FinalObjective(), 1239.0, 10*tol) ? 0 : 1;
+
+    if(retval < 0)
+    {
+        std::cout << "The two results differ beyond solver tolerance!\n";
+    }
+
 
     delete idas;
     delete gen;

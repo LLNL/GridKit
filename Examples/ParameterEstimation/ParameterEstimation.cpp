@@ -71,7 +71,7 @@
 #include <Solver/Optimization/DynamicObjective.hpp>
 #include <Solver/Optimization/DynamicConstraint.hpp>
 #include <Utilities/FileIO.hpp>
-
+#include <Utilities/Testing.hpp>
 
 
 int main(int argc, char** argv)
@@ -79,6 +79,7 @@ int main(int argc, char** argv)
     using namespace ModelLib;
     using namespace AnalysisManager::Sundials;
     using namespace AnalysisManager;
+    using namespace GridKit::Testing;
 
     // Create an infinite bus
     BaseBus<double, size_t>* bus = new BusSlack<double, size_t>(1.0, 0.0);
@@ -137,6 +138,9 @@ int main(int argc, char** argv)
     // Create an instance of the IpoptApplication
     Ipopt::SmartPtr<Ipopt::IpoptApplication> ipoptApp = IpoptApplicationFactory();
 
+    // Set solver tolerance
+    const double tol = 1e-5; 
+
     // Initialize the IpoptApplication and process the options
     Ipopt::ApplicationReturnStatus status;
     status = ipoptApp->Initialize();
@@ -148,7 +152,7 @@ int main(int argc, char** argv)
 
     // Configure Ipopt application
     ipoptApp->Options()->SetStringValue("hessian_approximation", "limited-memory");
-    ipoptApp->Options()->SetNumericValue("tol", 1e-4);
+    ipoptApp->Options()->SetNumericValue("tol", tol);
     ipoptApp->Options()->SetIntegerValue("print_level", 0);
 
     // Create dynamic objective interface to Ipopt solver
@@ -167,6 +171,13 @@ int main(int argc, char** argv)
                   << " Optimal value of H = " << model->param()[0] << "\n"
                   << " The final value of the objective function G(H) = "
                   << ipoptApp->Statistics()->FinalObjective() << "\n\n";
+    }
+
+    // Store dynamic objective optimization results
+    double* results  = new double[model->size_opt()];
+    for(unsigned i=0; i <model->size_opt(); ++i)
+    {
+        results[i] = model->param()[i];
     }
 
     // Guess value of inertia coefficient
@@ -190,7 +201,21 @@ int main(int argc, char** argv)
                   << ipoptApp->Statistics()->FinalObjective() << "\n\n";
     }
 
+    // Compare results of the two optimization methods
+    int retval = 0;
+    for(unsigned i=0; i <model->size_opt(); ++i)
+    {
+        if(!isEqual(results[i], model->param()[i], 10*tol))
+            --retval; 
+    }
+
+    if(retval < 0)
+    {
+        std::cout << "The two results differ beyond solver tolerance!\n";
+    }
+
+    delete [] results;
     delete idas;
     delete model;
-    return 0;
+    return retval;
 }

@@ -93,3 +93,11 @@ include_directories(${SUITESPARSE_INCLUDE_DIR} ${SUNDIALS_INCLUDE_DIR} ${IPOPT_I
 add_subdirectory(ComponentLib)
 add_subdirectory(Solver)
 add_subdirectory(Examples)
+
+# TESTING
+enable_testing()
+add_test(NAME AdjointSens COMMAND $<TARGET_FILE:adjoint>)
+add_test(NAME DynamicConOpt COMMAND $<TARGET_FILE:dynconopt>)
+add_test(NAME GenConstLoad COMMAND $<TARGET_FILE:genconstload>)
+add_test(NAME GenInfiniteBus COMMAND $<TARGET_FILE:geninfbus>)
+add_test(NAME ParameterEst COMMAND $<TARGET_FILE:paramest> ${CMAKE_SOURCE_DIR}/Examples/ParameterEstimation/lookup_table.dat)
