@@ -76,33 +76,38 @@ int main()
     using namespace GridKit::Testing;
 
     // Create a system model
+    // (usually from netfile or GUI input, this one is hard-wired)
     MiniGrid<double, size_t>* model = new MiniGrid<double, size_t>();
 
-    // allocate model components
+    // allocate model
     model->allocate();
 
-    // Create numerical integrator and configure it for the generator model
+    // Create numerical solver and attach the model to it.
+    // Here we use Kinsol solver from SUNDIALS library
     Kinsol<double, size_t>* kinsol = new Kinsol<double, size_t>(model);
-
 
     // setup simulation
     kinsol->configureSimulation();
+    // initialize simulation with default initial guess 
     kinsol->getDefaultInitialCondition();
     // kinsol->initializeSimulation();
 
+    // Compute solution
     kinsol->runSimulation();
 
+    // Print solution
     double const th2 = model->th2() * 180.0/M_PI; 
     double const V2  = model->V2();
     double const th3 = model->th3() * 180.0/M_PI; 
-    // kinsol->printOutput();
     std::cout << "Solution:\n";
     std::cout << "  theta2 = " << th2 << " deg\n";
     std::cout << "  V2     = " << V2  << " p.u.\n";
     std::cout << "  theta3 = " << th3 << " deg\n\n";
 
+    // Print solver performance statistics
     kinsol->printFinalStats();
 
+    // Delete solver and model
     delete kinsol;
     delete model;
     return 0;
