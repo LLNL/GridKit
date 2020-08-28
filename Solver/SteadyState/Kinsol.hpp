@@ -89,8 +89,8 @@ namespace AnalysisManager
             int configureSimulation();
             int configureLinearSolver();
             int getDefaultInitialCondition();
-            int setIntegrationTime(real_type t_init, real_type t_final, int nout);
-            int initializeSimulation(real_type t0, bool findConsistent=false);
+            // int setIntegrationTime(real_type t_init, real_type t_final, int nout);
+            // int initializeSimulation();
             int runSimulation();
             int deleteSimulation();
 
@@ -155,7 +155,7 @@ namespace AnalysisManager
             //     return NV_DATA_S(qB_);
             // }
 
-            void printOutput(realtype t);
+            void printOutput();
             void printSpecial(realtype t, N_Vector x);
             void printFinalStats();
 

@@ -100,7 +100,7 @@ namespace Sundials
 
         // Allocate scaling vector
         scale_ = N_VClone(yy_);
-        checkAllocation((void*) yy0_, "N_VClone");
+        checkAllocation((void*) scale_, "N_VClone");
 
         // Create vectors to store restart initial condition
         yy0_ = N_VClone(yy_);
@@ -170,6 +170,7 @@ namespace Sundials
     int Kinsol<ScalarT, IdxT>::runSimulation()
     {
         int retval = 0;
+        N_VConst(1.0, scale_);
         retval = KINSol(solver_, yy_, KIN_LINESEARCH, scale_, scale_);
         checkOutput(retval, "KINSol");
         //printOutput(tout); 
@@ -238,11 +239,11 @@ namespace Sundials
 
 
     template <class ScalarT, typename IdxT>
-    void Kinsol<ScalarT, IdxT>::printOutput(realtype t)
+    void Kinsol<ScalarT, IdxT>::printOutput()
     {
         realtype *yval  = N_VGetArrayPointer_Serial(yy_);
 
-        std::cout << std::setprecision(5) << std::setw(7) << t << " ";
+        std::cout << std::setprecision(5) << std::setw(7);
         for (IdxT i = 0; i < model_->size(); ++i)
         {
             std::cout << yval[i] << " ";

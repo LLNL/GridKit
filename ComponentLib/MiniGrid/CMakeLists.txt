@@ -51,13 +51,9 @@
 # government or Lawrence Livermore National Security, LLC. The views and
 # opinions of authors expressed herein do not necessarily state or reflect
 # those of the United States government or Lawrence Livermore National
-# Security, LLC, and shall not be used for advertising or product
+# Security, LLC, and shall not be used for advertising or product 
 # endorsement purposes.
 #
 
-add_subdirectory(AdjointSensitivity)
-add_subdirectory(DynamicConstrainedOpt)
-add_subdirectory(GenConstLoad)
-add_subdirectory(GenInfiniteBus)
-add_subdirectory(Grid3Bus)
-add_subdirectory(ParameterEstimation)
+add_library(MiniGrid MiniGrid.cpp)
+set(component_models ${component_models} MiniGrid PARENT_SCOPE)

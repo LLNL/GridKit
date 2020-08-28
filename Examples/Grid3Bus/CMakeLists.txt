@@ -55,9 +55,6 @@
 # endorsement purposes.
 #
 
-add_subdirectory(AdjointSensitivity)
-add_subdirectory(DynamicConstrainedOpt)
-add_subdirectory(GenConstLoad)
-add_subdirectory(GenInfiniteBus)
-add_subdirectory(Grid3Bus)
-add_subdirectory(ParameterEstimation)
+add_executable(grid3bus Grid3Bus.cpp)
+target_link_libraries(grid3bus MiniGrid ${solver_libs})
+install(TARGETS grid3bus RUNTIME DESTINATION bin)
