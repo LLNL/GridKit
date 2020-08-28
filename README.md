@@ -37,6 +37,11 @@ cmake -S source_dir -B build_dir
 ccmake ./build_dir # In order to bring up the CMake curses frontend
 cmake-gui ./build_dir # In order to bring up the CMake GUI frontend
 cmake --build build_dir # To build all targets
+cd build_dir; ctest # To validate examples were built successfully
 cmake --build build_dir --target install_dir # To install - this is currently broken
 ```
 Since the installation of Ipopt, Sundials and Suitesparse are all outside of the project_dir, you will need to specify the install directories of these modules within the CMake GUI. Once the root directory of these modules is specified in the CMake GUI, the include directories and the associated libraries should automatically be found. If you can load any modules beforehand, they will automatically be populated and you will not need to specify the root directory.
+
+### Testing
+
+Several examples are built when running `cmake --build buid_dir`, and these tests are automatically executed by running `ctest` in the build directory. The executables for each test can be found in `<build_dir>/Examples/<TestName>/<testexecutable>`.
