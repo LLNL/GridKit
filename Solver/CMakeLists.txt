@@ -57,5 +57,6 @@
 
 add_subdirectory(Dynamic)
 add_subdirectory(Optimization)
+add_subdirectory(SteadyState)
 set(solver_libs ${solver_libs} PARENT_SCOPE)
 

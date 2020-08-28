@@ -67,8 +67,9 @@ User may set:
 # SUNDIALS modules needed for the build
 # The order matters in case of static build!
 set(SUNDIALS_MODULES 
-  sundials_idas 
-  sundials_nvecserial 
+  sundials_idas
+  sundials_kinsol
+  sundials_nvecserial
 )
 
 find_library(SUNDIALS_LIBRARY
