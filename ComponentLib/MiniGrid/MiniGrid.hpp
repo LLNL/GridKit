@@ -75,6 +75,8 @@ namespace ModelLib
         using ModelEvaluatorImpl<ScalarT, IdxT>::time_;
         using ModelEvaluatorImpl<ScalarT, IdxT>::y_;
         using ModelEvaluatorImpl<ScalarT, IdxT>::f_;
+        using ModelEvaluatorImpl<ScalarT, IdxT>::rtol_;
+        using ModelEvaluatorImpl<ScalarT, IdxT>::atol_;
 
         typedef typename ModelEvaluatorImpl<ScalarT, IdxT>::real_type real_type;
 

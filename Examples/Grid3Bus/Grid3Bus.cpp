@@ -100,15 +100,20 @@ int main()
     double const V2  = model->V2();
     double const th3 = model->th3() * 180.0/M_PI; 
     std::cout << "Solution:\n";
-    std::cout << "  theta2 = " << th2 << " deg\n";
-    std::cout << "  V2     = " << V2  << " p.u.\n";
-    std::cout << "  theta3 = " << th3 << " deg\n\n";
+    std::cout << "  theta2 = " << th2 << " deg,  expected = " << " -4.87979 deg\n";
+    std::cout << "  V2     = " << V2  << " p.u., expected = " << "  1.08281 p.u.\n";
+    std::cout << "  theta3 = " << th3 << " deg,  expected = " << "  1.46241 deg\n\n";
 
     // Print solver performance statistics
     kinsol->printFinalStats();
 
+    int retval = 0;
+    retval += isEqual(th2, -4.878, 1e-4);
+    retval += isEqual(V2,   1.096, 1e-4);
+    retval += isEqual(th3,  1.491, 1e-4);
+
     // Delete solver and model
     delete kinsol;
     delete model;
-    return 0;
+    return retval;
 }
