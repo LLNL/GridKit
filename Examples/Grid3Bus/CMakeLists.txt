@@ -58,3 +58,6 @@
 add_executable(grid3bus Grid3Bus.cpp)
 target_link_libraries(grid3bus MiniGrid ${solver_libs})
 install(TARGETS grid3bus RUNTIME DESTINATION bin)
+
+add_executable(sys3bus Grid3BusSys.cpp)
+target_link_libraries(sys3bus MiniGrid Bus Branch Load ${solver_libs})
