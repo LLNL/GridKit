@@ -77,16 +77,28 @@ namespace ModelLib {
 
 template <class ScalarT, typename IdxT>
 Branch<ScalarT, IdxT>::Branch(bus_type* bus1, bus_type* bus2)
-  : gL_( 100.0),
-    bL_(-100.0),
-    gL1_(0.0),
-    bL1_(0.01),
-    gL2_(0.0),
-    bL2_(0.01),
+  : R_(0.0),
+    X_(0.01),
+    G_(0.0),
+    B_(0.0),
+    bus1_(bus1),
+    bus2_(bus2)
+{
+    updateParams();
+    size_ = 0;
+}
+
+template <class ScalarT, typename IdxT>
+Branch<ScalarT, IdxT>::Branch(real_type R, real_type X, real_type G, real_type B, bus_type* bus1, bus_type* bus2)
+  : R_(R),
+    X_(X),
+    G_(G),
+    B_(B),
     bus1_(bus1),
     bus2_(bus2)
 {
 }
+
 
 template <class ScalarT, typename IdxT>
 Branch<ScalarT, IdxT>::~Branch()
@@ -131,10 +143,10 @@ template <class ScalarT, typename IdxT>
 int Branch<ScalarT, IdxT>::evaluateResidual()
 {
     ScalarT dtheta = theta1() - theta2();
-    P1() +=  V1()*V1()*(gL_ + gL1_) - V1()*V2()*(gL_*cos(dtheta) + bL_*sin(dtheta));
-    Q1() += -V1()*V1()*(bL_ + bL1_) - V1()*V2()*(gL_*sin(dtheta) - bL_*cos(dtheta));
-    P2() +=  V2()*V2()*(gL_ + gL2_) - V1()*V2()*(gL_*cos(dtheta) - bL_*sin(dtheta));
-    Q2() += -V2()*V2()*(bL_ + bL2_) + V1()*V2()*(gL_*sin(dtheta) + bL_*cos(dtheta));
+    P1() +=  V1()*V1()*Gii_ + V1()*V2()*(Gij_*cos(dtheta) + Bij_*sin(dtheta));
+    Q1() += -V1()*V1()*Bii_ + V1()*V2()*(Gij_*sin(dtheta) - Bij_*cos(dtheta));
+    P2() +=  V2()*V2()*Gii_ + V1()*V2()*(Gij_*cos(dtheta) - Bij_*sin(dtheta));
+    Q2() += -V2()*V2()*Bii_ - V1()*V2()*(Gij_*sin(dtheta) + Bij_*cos(dtheta));
 
     return 0;
 }

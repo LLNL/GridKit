@@ -96,6 +96,7 @@ namespace ModelLib
 
     public:
         Branch(bus_type* bus1, bus_type* bus2);
+        Branch(real_type R, real_type X, real_type G, real_type B, bus_type* bus1, bus_type* bus2);
         virtual ~Branch();
 
         int allocate();
@@ -110,35 +111,33 @@ namespace ModelLib
         //int evaluateAdjointJacobian();
         int evaluateAdjointIntegrand();
 
+        void updateTime(real_type t, real_type a)
+        {
+        }
+
     public:
-        void setGl(real_type gL)
+        void setR(real_type R)
         {
-            gL_ = gL;
+            R_ = R;
+            updateParams();
         }
 
-        void setGl1(real_type gL1)
+        void setX(real_type X)
         {
-            gL1_ = gL1;
+            X_ = X;
+            updateParams();
         }
 
-        void setGl2(real_type gL2)
+        void setG(real_type G)
         {
-            gL2_ = gL2;
+            G_ = G;
+            updateParams();
         }
 
-        void setBl(real_type bL)
+        void setB(real_type B)
         {
-            bL_ = bL;
-        }
-
-        void setBl1(real_type bL1)
-        {
-            bL1_ = bL1;
-        }
-
-        void setBl2(real_type bL2)
-        {
-            bL2_ = bL2;
+            B_ = B;
+            updateParams();
         }
 
     private:
@@ -182,13 +181,22 @@ namespace ModelLib
             return bus2_->Q();
         }
 
+        void updateParams()
+        {
+            Gij_ = -R_/(R_*R_ + X_*X_);
+            Bij_ =  X_/(R_*R_ + X_*X_);
+            Gii_ = 0.5*G_ - Gij_;
+            Bii_ = 0.5*B_ - Bij_;
+        }
     private:
-        real_type gL_;
-        real_type bL_;
-        real_type gL1_;
-        real_type bL1_;
-        real_type gL2_;
-        real_type bL2_;
+        real_type R_;
+        real_type X_;
+        real_type G_;
+        real_type B_;
+        real_type Gii_;
+        real_type Gij_;
+        real_type Bii_;
+        real_type Bij_;
         bus_type* bus1_;
         bus_type* bus2_;
     };
