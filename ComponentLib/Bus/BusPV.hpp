@@ -60,6 +60,7 @@
 #ifndef _BUS_PV_HPP_
 #define _BUS_PV_HPP_
 
+#include <cassert>
 #include "BaseBus.hpp"
 
 namespace ModelLib
@@ -139,6 +140,53 @@ namespace ModelLib
             return f_[0];
         }
 
+        virtual ScalarT& lambdaP()
+        {
+            assert(false);
+            // return 0.0;
+        }
+
+        virtual const ScalarT& lambdaP() const
+        {
+            assert(false);
+            // return 0.0;
+        }
+
+        virtual ScalarT& lambdaQ()
+        {
+            assert(false);
+            // return 0.0;
+        }
+
+        virtual const ScalarT& lambdaQ() const
+        {
+            assert(false);
+            // return 0.0;
+        }
+
+        virtual ScalarT& PB()
+        {
+            assert(false);
+            // return 0.0;
+        }
+
+        virtual const ScalarT& PB() const
+        {
+            assert(false);
+            // return 0.0;
+        }
+
+        virtual ScalarT& QB()
+        {
+            assert(false);
+            // return 0.0;
+        }
+
+        virtual const ScalarT& QB() const
+        {
+            assert(false);
+            // return 0.0;
+        }
 
     private:
         ScalarT V_;
