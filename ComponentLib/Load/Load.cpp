@@ -121,8 +121,8 @@ int Load<ScalarT, IdxT>::tagDifferentiable()
 template <class ScalarT, typename IdxT>
 int Load<ScalarT, IdxT>::evaluateResidual()
 {
-    bus_->P() += P_;
-    bus_->Q() += Q_;
+    bus_->P() -= P_;
+    bus_->Q() -= Q_;
     return 0;
 }
 
