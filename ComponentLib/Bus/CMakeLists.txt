@@ -55,5 +55,5 @@
 # endorsement purposes.
 #
 
-add_library(Bus BusSlack.cpp BusPQ.cpp)
+add_library(Bus BusSlack.cpp BusPQ.cpp BusPV.cpp)
 set(component_models ${component_models} Bus PARENT_SCOPE)
