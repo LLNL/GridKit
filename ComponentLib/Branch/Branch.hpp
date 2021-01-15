@@ -119,26 +119,22 @@ namespace ModelLib
         void setR(real_type R)
         {
             R_ = R;
-            updateParams();
         }
 
         void setX(real_type X)
         {
             // std::cout << "Setting X ...\n";
             X_ = X;
-            updateParams();
         }
 
         void setG(real_type G)
         {
             G_ = G;
-            updateParams();
         }
 
         void setB(real_type B)
         {
             B_ = B;
-            updateParams();
         }
 
     private:
@@ -182,26 +178,11 @@ namespace ModelLib
             return bus2_->Q();
         }
 
-        void updateParams()
-        {
-            Gij_ = -R_/(R_*R_ + X_*X_);
-            Bij_ =  X_/(R_*R_ + X_*X_);
-            Gii_ = 0.5*G_ - Gij_;
-            Bii_ = 0.5*B_ - Bij_;
-            // std::cout << "Gij = " << Gij_ << "\n";
-            // std::cout << "Bij = " << Bij_ << "\n";
-            // std::cout << "Gii = " << Gii_ << "\n";
-            // std::cout << "Bii = " << Bii_ << "\n\n";
-        }
     private:
         real_type R_;
         real_type X_;
         real_type G_;
         real_type B_;
-        real_type Gii_;
-        real_type Gij_;
-        real_type Bii_;
-        real_type Bij_;
         bus_type* bus1_;
         bus_type* bus2_;
     };

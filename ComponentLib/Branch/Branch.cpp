@@ -84,7 +84,6 @@ Branch<ScalarT, IdxT>::Branch(bus_type* bus1, bus_type* bus2)
     bus1_(bus1),
     bus2_(bus2)
 {
-    updateParams();
     size_ = 0;
 }
 
@@ -147,22 +146,12 @@ int Branch<ScalarT, IdxT>::evaluateResidual()
     // std::cout << "Evaluating branch residual ...\n";
     real_type x = X_/(R_*R_ + X_*X_);
     real_type r = R_/(R_*R_ + X_*X_);
-    // std::cout << "x = " << x << "\n";
-    // std::cout << "r = " << r << "\n";
     ScalarT dtheta = theta1() - theta2();
 
-    // std::cout << "V1 = " << V1() << ", V2 = " << V2() << "\n";
-    // std::cout << "theta1 = " << theta1() << ", theta2 = " << theta2() << "\n";
-    
-    // ScalarT v1 = V1(), v2 = V2();
-    ScalarT p1 = r*V1()*V1() + V1()*V2()*(-r*cos(dtheta) + x*sin(dtheta));
-    ScalarT q1 = x*V1()*V1() + V1()*V2()*(-r*sin(dtheta) - x*cos(dtheta));
-    ScalarT p2 = r*V2()*V2() + V1()*V2()*(-r*cos(dtheta) - x*sin(dtheta));
-    ScalarT q2 = x*V2()*V2() + V1()*V2()*( r*sin(dtheta) - x*cos(dtheta));
-    P1() -= p1; // std::cout << "p1 = " << p1 << "\n";
-    Q1() -= q1; // std::cout << "q1 = " << q1 << "\n";
-    P2() -= p2; // std::cout << "p2 = " << p2 << "\n";
-    Q2() -= q2; // std::cout << "q2 = " << q2 << "\n";
+    P1() -= (r + 0.5*G_)*V1()*V1() + V1()*V2()*(-r*cos(dtheta) + x*sin(dtheta));
+    Q1() -= (x - 0.5*B_)*V1()*V1() + V1()*V2()*(-r*sin(dtheta) - x*cos(dtheta));
+    P2() -= (r + 0.5*G_)*V2()*V2() + V1()*V2()*(-r*cos(dtheta) - x*sin(dtheta));
+    Q2() -= (x - 0.5*B_)*V2()*V2() + V1()*V2()*( r*sin(dtheta) - x*cos(dtheta));
 
     return 0;
 }
