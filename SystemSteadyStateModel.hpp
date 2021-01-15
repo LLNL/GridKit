@@ -158,8 +158,6 @@ public:
             size_ += component->size();
         }
 
-        std::cout << "System size is " << size_ << "\n";
-
         // Allocate global vectors
         y_.resize(size_);
         f_.resize(size_);
@@ -215,6 +213,7 @@ public:
             }
             varOffset += component->size();
         }
+        return 0;
     }
 
     /**

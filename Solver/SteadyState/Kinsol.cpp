@@ -115,7 +115,7 @@ namespace Sundials
         checkOutput(retval, "KINSetUserData");
 
         // Set output verbosity level
-        retval = KINSetPrintLevel(solver_, 3);
+        retval = KINSetPrintLevel(solver_, 0);
         checkOutput(retval, "KINSetPrintLevel");
 
         // Set tolerances

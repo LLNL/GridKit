@@ -81,20 +81,65 @@ int main()
     using namespace AnalysisManager;
     using namespace GridKit::Testing;
 
-    // First, create a system model
+    std::cout << "\nSolving power flow for a 3-bus monolithic model ...\n\n";
+    // Create a 3-bus model
+    MiniGrid<double, size_t>* model = new MiniGrid<double, size_t>();
+
+    // allocate model
+    model->allocate();
+    std::cout << "Model size: " << model->size() << "\n\n";
+
+    // Create numerical solver and attach the model to it.
+    // Here we use Kinsol solver from SUNDIALS library
+    Kinsol<double, size_t>* kinsol = new Kinsol<double, size_t>(model);
+
+    // setup simulation
+    kinsol->configureSimulation();
+    // initialize simulation with default initial guess V=1, theta=0
+    kinsol->getDefaultInitialCondition();
+    // Compute solution
+    kinsol->runSimulation();
+    // Print solution
+    double th2 = model->th2() * 180.0/M_PI; 
+    double V2  = model->V2();
+    double th3 = model->th3() * 180.0/M_PI; 
+    std::cout << "Solution:\n";
+    std::cout << "  theta2 = " << th2 << " deg,  expected = " << " -4.87979 deg\n";
+    std::cout << "  V2     = " << V2  << " p.u., expected = " << "  1.08281 p.u.\n";
+    std::cout << "  theta3 = " << th3 << " deg,  expected = " << "  1.46241 deg\n\n";
+
+    // Print solver performance statistics
+    kinsol->printFinalStats();
+
+    int retval1 = 0;
+    retval1 += isEqual(th2, -4.878, 1e-4);
+    retval1 += isEqual(V2,   1.096, 1e-4);
+    retval1 += isEqual(th3,  1.491, 1e-4);
+
+    if(retval1 == 0)
+        std::cout << "\nSucess!\n\n\n";
+
+    // Delete solver and model
+    delete kinsol; kinsol = nullptr;
+    delete model;  model  = nullptr;
+
+    std::cout << "Solving same problem, but assembled from components ...\n\n";
+
+    // First, create an empty system model
     SystemSteadyStateModel<double, size_t>* sysmodel = new SystemSteadyStateModel<double, size_t>();
-    // Next create and parametrize buses ...
+
+    // Next create and add buses ...
     // Create a slack bus, fix V=1, theta=0
     BaseBus<double, size_t>* bus1 = new BusSlack<double, size_t>(1.0, 0.0);
     sysmodel->addBus(bus1);
     // Create a PQ bus, initialize V=1, theta=0
     BaseBus<double, size_t>* bus2 = new BusPQ<double, size_t>(1.0, 0.0);
     sysmodel->addBus(bus2);
-    // Create a PV bus, fix V=1.1, initialize theta=0, set P=2
+    // Create a PV bus, fix V=1.1, initialize theta=0, and set power injection Pg=2
     BaseBus<double, size_t>* bus3 = new BusPV<double, size_t>(1.1, 0.0, 2.0);
     sysmodel->addBus(bus3);
 
-    // Create branches ...
+    // Create and add branches ...
     Branch<double, size_t>* branch12 = new Branch<double, size_t>(bus1, bus2);
     branch12->setX(1.0/10.0);
     sysmodel->addComponent(branch12);
@@ -105,44 +150,30 @@ int main()
     branch23->setX(1.0/12.0);
     sysmodel->addComponent(branch23);
 
-    // Add other components
+    // Create and add loads ...
     Load<double, size_t>* load1 = new Load<double, size_t>(bus1, 2.0, 0.0);
     sysmodel->addComponent(load1);
     Load<double, size_t>* load2 = new Load<double, size_t>(bus2, 2.5, -0.8);
     sysmodel->addComponent(load2);
 
-    // Create a system model
-    // (usually from netfile or GUI input, this one is hard-wired)
-    // MiniGrid<double, size_t>* model = new MiniGrid<double, size_t>();
-    ModelEvaluator<double, size_t>* model = sysmodel;
-
     // allocate model
-    model->allocate();
-    std::cout << "Model size: " << model->size() << "\n";
+    sysmodel->allocate();
+    std::cout << "Model size: " << sysmodel->size() << "\n\n";
 
     // Create numerical solver and attach the model to it.
     // Here we use Kinsol solver from SUNDIALS library
-    Kinsol<double, size_t>* kinsol = new Kinsol<double, size_t>(model);
+    kinsol = new Kinsol<double, size_t>(sysmodel);
 
     // setup simulation
     kinsol->configureSimulation();
     // initialize simulation with default initial guess 
     kinsol->getDefaultInitialCondition();
-    // kinsol->initializeSimulation();
-    // std::cout << "  theta2 = " << bus2->theta() << " deg\n";
-    // std::cout << "  V2     = " << bus2->V()     << " p.u.\n";
-    // std::cout << "  theta3 = " << bus3->theta() << " deg\n\n";
-
     // Compute solution
     kinsol->runSimulation();
-
     // Print solution
-    // double const th2 = model->th2() * 180.0/M_PI; 
-    // double const V2  = model->V2();
-    // double const th3 = model->th3() * 180.0/M_PI; 
-    double const th2 = bus2->theta() * 180.0/M_PI; 
-    double const V2  = bus2->V();
-    double const th3 = bus3->theta() * 180.0/M_PI; 
+    th2 = bus2->theta() * 180.0/M_PI; 
+    V2  = bus2->V();
+    th3 = bus3->theta() * 180.0/M_PI; 
     std::cout << "Solution:\n";
     std::cout << "  theta2 = " << th2 << " deg,  expected = " << " -4.87979 deg\n";
     std::cout << "  V2     = " << V2  << " p.u., expected = " << "  1.08281 p.u.\n";
@@ -151,13 +182,17 @@ int main()
     // Print solver performance statistics
     kinsol->printFinalStats();
 
-    int retval = 0;
-    retval += isEqual(th2, -4.878, 1e-4);
-    retval += isEqual(V2,   1.096, 1e-4);
-    retval += isEqual(th3,  1.491, 1e-4);
+    int retval2 = 0;
+    retval2 += isEqual(th2, -4.878, 1e-4);
+    retval2 += isEqual(V2,   1.096, 1e-4);
+    retval2 += isEqual(th3,  1.491, 1e-4);
+
+    if(retval2 == 0)
+        std::cout << "\nSucess!\n\n\n";
+
 
     // Delete solver and model
     delete kinsol;
-    delete model;
-    return retval;
+    delete sysmodel;
+    return retval1 + retval2;
 }
