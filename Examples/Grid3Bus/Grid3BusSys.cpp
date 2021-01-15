@@ -68,6 +68,7 @@
 #include <ComponentLib/Bus/BusSlack.hpp>
 #include <ComponentLib/Branch/Branch.hpp>
 #include <ComponentLib/Load/Load.hpp>
+#include <SystemSteadyStateModel.hpp>
 #include <Solver/SteadyState/Kinsol.hpp>
 
 #include <Utilities/Testing.hpp>
@@ -80,32 +81,44 @@ int main()
     using namespace AnalysisManager;
     using namespace GridKit::Testing;
 
-    // First create and parametrize buses ...
+    // First, create a system model
+    SystemSteadyStateModel<double, size_t>* sysmodel = new SystemSteadyStateModel<double, size_t>();
+    // Next create and parametrize buses ...
     // Create a slack bus, fix V=1, theta=0
     BaseBus<double, size_t>* bus1 = new BusSlack<double, size_t>(1.0, 0.0);
+    sysmodel->addBus(bus1);
     // Create a PQ bus, initialize V=1, theta=0
     BaseBus<double, size_t>* bus2 = new BusPQ<double, size_t>(1.0, 0.0);
+    sysmodel->addBus(bus2);
     // Create a PV bus, fix V=1.1, initialize theta=0, set P=2
     BaseBus<double, size_t>* bus3 = new BusPV<double, size_t>(1.1, 0.0, 2.0);
+    sysmodel->addBus(bus3);
 
-    // Next create branches ...
+    // Create branches ...
     Branch<double, size_t>* branch12 = new Branch<double, size_t>(bus1, bus2);
     branch12->setX(1.0/10.0);
+    sysmodel->addComponent(branch12);
     Branch<double, size_t>* branch13 = new Branch<double, size_t>(bus1, bus3);
-    branch12->setX(1.0/15.0);
+    branch13->setX(1.0/15.0);
+    sysmodel->addComponent(branch13);
     Branch<double, size_t>* branch23 = new Branch<double, size_t>(bus2, bus3);
-    branch12->setX(1.0/12.0);
+    branch23->setX(1.0/12.0);
+    sysmodel->addComponent(branch23);
 
     // Add other components
     Load<double, size_t>* load1 = new Load<double, size_t>(bus1, 2.0, 0.0);
+    sysmodel->addComponent(load1);
     Load<double, size_t>* load2 = new Load<double, size_t>(bus2, 2.5, -0.8);
+    sysmodel->addComponent(load2);
 
     // Create a system model
     // (usually from netfile or GUI input, this one is hard-wired)
-    MiniGrid<double, size_t>* model = new MiniGrid<double, size_t>();
+    // MiniGrid<double, size_t>* model = new MiniGrid<double, size_t>();
+    ModelEvaluator<double, size_t>* model = sysmodel;
 
     // allocate model
     model->allocate();
+    std::cout << "Model size: " << model->size() << "\n";
 
     // Create numerical solver and attach the model to it.
     // Here we use Kinsol solver from SUNDIALS library
@@ -116,14 +129,20 @@ int main()
     // initialize simulation with default initial guess 
     kinsol->getDefaultInitialCondition();
     // kinsol->initializeSimulation();
+    // std::cout << "  theta2 = " << bus2->theta() << " deg\n";
+    // std::cout << "  V2     = " << bus2->V()     << " p.u.\n";
+    // std::cout << "  theta3 = " << bus3->theta() << " deg\n\n";
 
     // Compute solution
     kinsol->runSimulation();
 
     // Print solution
-    double const th2 = model->th2() * 180.0/M_PI; 
-    double const V2  = model->V2();
-    double const th3 = model->th3() * 180.0/M_PI; 
+    // double const th2 = model->th2() * 180.0/M_PI; 
+    // double const V2  = model->V2();
+    // double const th3 = model->th3() * 180.0/M_PI; 
+    double const th2 = bus2->theta() * 180.0/M_PI; 
+    double const V2  = bus2->V();
+    double const th3 = bus3->theta() * 180.0/M_PI; 
     std::cout << "Solution:\n";
     std::cout << "  theta2 = " << th2 << " deg,  expected = " << " -4.87979 deg\n";
     std::cout << "  V2     = " << V2  << " p.u., expected = " << "  1.08281 p.u.\n";

@@ -124,6 +124,7 @@ namespace ModelLib
 
         void setX(real_type X)
         {
+            // std::cout << "Setting X ...\n";
             X_ = X;
             updateParams();
         }
@@ -187,6 +188,10 @@ namespace ModelLib
             Bij_ =  X_/(R_*R_ + X_*X_);
             Gii_ = 0.5*G_ - Gij_;
             Bii_ = 0.5*B_ - Bij_;
+            // std::cout << "Gij = " << Gij_ << "\n";
+            // std::cout << "Bij = " << Bij_ << "\n";
+            // std::cout << "Gii = " << Gii_ << "\n";
+            // std::cout << "Bii = " << Bii_ << "\n\n";
         }
     private:
         real_type R_;

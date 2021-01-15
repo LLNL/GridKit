@@ -114,6 +114,10 @@ namespace Sundials
         retval = KINSetUserData(solver_, model_);
         checkOutput(retval, "KINSetUserData");
 
+        // Set output verbosity level
+        retval = KINSetPrintLevel(solver_, 3);
+        checkOutput(retval, "KINSetPrintLevel");
+
         // Set tolerances
         realtype fnormtol;  ///< Residual tolerance
         realtype scsteptol; ///< Scaled step tolerance

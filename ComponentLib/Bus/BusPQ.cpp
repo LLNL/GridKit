@@ -106,7 +106,7 @@ BusPQ<ScalarT, IdxT>::BusPQ(ScalarT V, ScalarT theta)
 template <class ScalarT, typename IdxT>
 BusPQ<ScalarT, IdxT>::~BusPQ()
 {
-    //std::cout << "Destroy Gen2..." << std::endl;
+    //std::cout << "Destroy PQ bus ..." << std::endl;
 }
 
 /*!
@@ -115,7 +115,7 @@ BusPQ<ScalarT, IdxT>::~BusPQ()
 template <class ScalarT, typename IdxT>
 int BusPQ<ScalarT, IdxT>::allocate()
 {
-    //std::cout << "Allocate Gen2..." << std::endl;
+    //std::cout << "Allocate PQ bus ..." << std::endl;
     f_.resize(size_);
     y_.resize(size_);
     yp_.resize(size_);
@@ -163,9 +163,9 @@ int BusPQ<ScalarT, IdxT>::initialize()
 template <class ScalarT, typename IdxT>
 int BusPQ<ScalarT, IdxT>::evaluateResidual()
 {
+    // std::cout << "Evaluating residual of a PQ bus ...\n";
     f_[0] = 0.0;
     f_[1] = 0.0;
-
     return 0;
 }
 

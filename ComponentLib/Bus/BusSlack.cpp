@@ -107,6 +107,7 @@ BusSlack<ScalarT, IdxT>::~BusSlack()
 template <class ScalarT, typename IdxT>
 int BusSlack<ScalarT, IdxT>::evaluateResidual()
 {
+    // std::cout << "Evaluating residual of a slack bus ...\n";
     P() = 0.0;
     Q() = 0.0;
     return 0;

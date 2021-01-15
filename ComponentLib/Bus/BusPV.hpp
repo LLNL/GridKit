@@ -121,23 +121,23 @@ namespace ModelLib
 
         virtual ScalarT& P()
         {
-            return P_;
+            return f_[0];
         }
 
         virtual const ScalarT& P() const
         {
-            return P_;
+            return f_[0];
         }
 
 
         virtual ScalarT& Q()
         {
-            return f_[0];
+            return Q_;
         }
 
         virtual const ScalarT& Q() const
         {
-            return f_[0];
+            return Q_;
         }
 
         virtual ScalarT& lambdaP()
@@ -191,7 +191,8 @@ namespace ModelLib
     private:
         ScalarT V_;
         ScalarT theta0_;  ///< Default initial value for phase
-        ScalarT P_;
+        ScalarT Pg_;      ///< Generator injection
+        ScalarT Q_;
 
     };
 

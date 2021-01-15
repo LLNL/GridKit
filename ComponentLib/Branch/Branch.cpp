@@ -138,15 +138,31 @@ int Branch<ScalarT, IdxT>::tagDifferentiable()
 /**
  * \brief Residual contribution of the branch is pushed to the
  * two terminal buses.
+ * 
+ * @todo Add and verify conductance to ground (B and G)
  */
 template <class ScalarT, typename IdxT>
 int Branch<ScalarT, IdxT>::evaluateResidual()
 {
+    // std::cout << "Evaluating branch residual ...\n";
+    real_type x = X_/(R_*R_ + X_*X_);
+    real_type r = R_/(R_*R_ + X_*X_);
+    // std::cout << "x = " << x << "\n";
+    // std::cout << "r = " << r << "\n";
     ScalarT dtheta = theta1() - theta2();
-    P1() +=  V1()*V1()*Gii_ + V1()*V2()*(Gij_*cos(dtheta) + Bij_*sin(dtheta));
-    Q1() += -V1()*V1()*Bii_ + V1()*V2()*(Gij_*sin(dtheta) - Bij_*cos(dtheta));
-    P2() +=  V2()*V2()*Gii_ + V1()*V2()*(Gij_*cos(dtheta) - Bij_*sin(dtheta));
-    Q2() += -V2()*V2()*Bii_ - V1()*V2()*(Gij_*sin(dtheta) + Bij_*cos(dtheta));
+
+    // std::cout << "V1 = " << V1() << ", V2 = " << V2() << "\n";
+    // std::cout << "theta1 = " << theta1() << ", theta2 = " << theta2() << "\n";
+    
+    // ScalarT v1 = V1(), v2 = V2();
+    ScalarT p1 = r*V1()*V1() + V1()*V2()*(-r*cos(dtheta) + x*sin(dtheta));
+    ScalarT q1 = x*V1()*V1() + V1()*V2()*(-r*sin(dtheta) - x*cos(dtheta));
+    ScalarT p2 = r*V2()*V2() + V1()*V2()*(-r*cos(dtheta) - x*sin(dtheta));
+    ScalarT q2 = x*V2()*V2() + V1()*V2()*( r*sin(dtheta) - x*cos(dtheta));
+    P1() -= p1; // std::cout << "p1 = " << p1 << "\n";
+    Q1() -= q1; // std::cout << "q1 = " << q1 << "\n";
+    P2() -= p2; // std::cout << "p2 = " << p2 << "\n";
+    Q2() -= q2; // std::cout << "q2 = " << q2 << "\n";
 
     return 0;
 }

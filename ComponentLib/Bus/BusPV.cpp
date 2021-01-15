@@ -74,7 +74,7 @@ namespace ModelLib {
  */
 template <class ScalarT, typename IdxT>
 BusPV<ScalarT, IdxT>::BusPV()
-  : V_(0.0), theta0_(0.0), P_(0.0)
+  : V_(0.0), theta0_(0.0), Pg_(0.0)
 {
     //std::cout << "Create BusPV..." << std::endl;
     //std::cout << "Number of equations is " << size_ << std::endl;
@@ -94,10 +94,10 @@ BusPV<ScalarT, IdxT>::BusPV()
  * - Number of optimization parameters = 0
  */
 template <class ScalarT, typename IdxT>
-BusPV<ScalarT, IdxT>::BusPV(ScalarT V, ScalarT theta0, ScalarT P)
-  : V_(V), theta0_(theta0), P_(P)
+BusPV<ScalarT, IdxT>::BusPV(ScalarT V, ScalarT theta0, ScalarT Pg)
+  : V_(V), theta0_(theta0), Pg_(Pg)
 {
-    //std::cout << "Create BusPV..." << std::endl;
+    //std::cout << "Create BusPV ..." << std::endl;
     //std::cout << "Number of equations is " << size_ << std::endl;
 
     size_ = 1;
@@ -115,7 +115,7 @@ BusPV<ScalarT, IdxT>::~BusPV()
 template <class ScalarT, typename IdxT>
 int BusPV<ScalarT, IdxT>::allocate()
 {
-    //std::cout << "Allocate Gen2..." << std::endl;
+    //std::cout << "Allocate PV bus ..." << std::endl;
     f_.resize(size_);
     y_.resize(size_);
     yp_.resize(size_);
@@ -144,7 +144,7 @@ template <class ScalarT, typename IdxT>
 int BusPV<ScalarT, IdxT>::initialize()
 {
     // std::cout << "Initialize BusPV..." << std::endl;
-    y_[0] = theta0_;
+    theta() = theta0_;
     yp_[0] = 0.0;
 
     return 0;
@@ -160,7 +160,9 @@ int BusPV<ScalarT, IdxT>::initialize()
 template <class ScalarT, typename IdxT>
 int BusPV<ScalarT, IdxT>::evaluateResidual()
 {
-    f_[0] = 0.0;
+    // std::cout << "Evaluating residual of a PV bus ...\n";
+    P() = Pg_;
+    Q() = 0.0;
 
     return 0;
 }
