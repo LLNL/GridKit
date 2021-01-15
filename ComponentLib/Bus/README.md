@@ -28,7 +28,7 @@ There exist two:
 
 
 <div align="center">
-   <img align="center" src="https://gitlab.pnnl.gov/gridkit/gridkit/-/raw/my_develop_new/Documentation/Figures/bus_variables.jpg">
+   <img align="center" src="Documentation/Figures/bus_variables.jpg">
    
    
   Figure 1: Sign convention for the power flow at the bus $`i`$
