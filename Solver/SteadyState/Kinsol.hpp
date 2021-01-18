@@ -58,8 +58,15 @@
  */
 
 
-#ifndef _IDA_HPP_
-#define _IDA_HPP_
+/**
+ * @file Kinsol.hpp
+ * @author Slaven Peles <slaven.peles@pnnl.gov>
+ * 
+ * Contains declaration of interface to KINSOL nonlinear solver from
+ * SUNDIALS library.
+ * 
+ */
+#pragma once
 
 #include <iostream>
 #include <exception>
@@ -214,6 +221,3 @@ namespace AnalysisManager
 
 
 } // namespace AnalysisManager
-
-
-#endif // _IDA_HPP_

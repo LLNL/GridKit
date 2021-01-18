@@ -57,6 +57,14 @@
  *
  */
 
+/**
+ * @file Grid3BusSys.cpp
+ * @author Slaven Peles <slaven.peles@pnnl.gov>
+ * 
+ * Simple 3-bus grid example. Two models are tested here -- a hard-wired model
+ * and a model assembled using GridKit's system composer.
+ * 
+ */
 
 #include <iostream>
 #include <iomanip>

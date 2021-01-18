@@ -57,6 +57,13 @@
  *
  */
 
+/**
+ * @file FileIO.hpp
+ * @author Slaven Peles <slaven.peles@pnnl.gov>
+ * 
+ * Contains definition of a utility for reading lookup tables.
+ * 
+ */
 #pragma once
 
 #include <vector>

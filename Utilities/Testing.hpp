@@ -57,6 +57,13 @@
  *
  */
 
+/**
+ * @file Testing.hpp
+ * @author Slaven Peles <slaven.peles@pnnl.gov>
+ * 
+ * Contains utilies for testing.
+ * 
+ */
 #pragma once
 
 

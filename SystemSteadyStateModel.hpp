@@ -57,8 +57,14 @@
  *
  */
 
-#ifndef _SYSTEM_MODEL_HPP_
-#define _SYSTEM_MODEL_HPP_
+/**
+ * @file SystemSteadyStaeModel.hpp
+ * @author Slaven Peles <slaven.peles@pnnl.gov>
+ * 
+ * Contains definition of power flow analysis class.
+ * 
+ */
+#pragma once
 
 #include <iostream>
 #include <vector>
@@ -370,5 +376,3 @@ private:
 }; // class SystemSteadyStateModel
 
 } // namespace ModelLib
-
-#endif // _SYSTEM_MODEL_HPP_

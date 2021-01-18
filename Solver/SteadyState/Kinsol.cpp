@@ -57,6 +57,14 @@
  *
  */
 
+/**
+ * @file Kinsol.cpp
+ * @author Slaven Peles <slaven.peles@pnnl.gov>
+ * 
+ * Contains definition of interface to KINSOL nonlinear solver from
+ * SUNDIALS library.
+ * 
+ */
 
 #include <iostream>
 #include <iomanip>
@@ -259,7 +267,7 @@ namespace Sundials
     void Kinsol<ScalarT, IdxT>::printSpecial(realtype t, N_Vector y)
     {
         realtype *yval = N_VGetArrayPointer_Serial(y);
-        int N = N_VGetLength_Serial(y);
+        IdxT N = N_VGetLength_Serial(y);
         std::cout << "{";
         std::cout << std::setprecision(5) << std::setw(7) << t;
         for (IdxT i = 0; i < N; ++i)
