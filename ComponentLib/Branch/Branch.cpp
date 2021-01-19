@@ -144,14 +144,14 @@ template <class ScalarT, typename IdxT>
 int Branch<ScalarT, IdxT>::evaluateResidual()
 {
     // std::cout << "Evaluating branch residual ...\n";
-    real_type x = X_/(R_*R_ + X_*X_);
-    real_type r = R_/(R_*R_ + X_*X_);
+    real_type b = -X_/(R_*R_ + X_*X_);
+    real_type g =  R_/(R_*R_ + X_*X_);
     ScalarT dtheta = theta1() - theta2();
 
-    P1() -= (r + 0.5*G_)*V1()*V1() + V1()*V2()*(-r*cos(dtheta) + x*sin(dtheta));
-    Q1() -= (x - 0.5*B_)*V1()*V1() + V1()*V2()*(-r*sin(dtheta) - x*cos(dtheta));
-    P2() -= (r + 0.5*G_)*V2()*V2() + V1()*V2()*(-r*cos(dtheta) - x*sin(dtheta));
-    Q2() -= (x - 0.5*B_)*V2()*V2() + V1()*V2()*( r*sin(dtheta) - x*cos(dtheta));
+    P1() -= ( g + 0.5*G_)*V1()*V1() + V1()*V2()*(-g*cos(dtheta) - b*sin(dtheta));
+    Q1() -= (-b - 0.5*B_)*V1()*V1() + V1()*V2()*(-g*sin(dtheta) + b*cos(dtheta));
+    P2() -= ( g + 0.5*G_)*V2()*V2() + V1()*V2()*(-g*cos(dtheta) + b*sin(dtheta));
+    Q2() -= (-b - 0.5*B_)*V2()*V2() + V1()*V2()*( g*sin(dtheta) + b*cos(dtheta));
 
     return 0;
 }
