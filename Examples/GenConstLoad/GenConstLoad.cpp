@@ -166,9 +166,10 @@ int main()
 
     // Compare results of the two optimization methods
     int retval = 
-        isEqual(ipoptApp->Statistics()->FinalObjective(), 1239.0, 10*tol) ? 0 : 1;
+        isEqual(ipoptApp->Statistics()->FinalObjective(), 213780.0, 10*tol) ? 0 : 1;
+        // isEqual(ipoptApp->Statistics()->FinalObjective(), 1239.0, 10*tol) ? 0 : 1;
 
-    if(retval < 0)
+    if(retval != 0)
     {
         std::cout << "The two results differ beyond solver tolerance!\n";
     }

@@ -66,6 +66,7 @@
  */
 #pragma once
 
+#include <cmath>
 
 namespace GridKit
 {

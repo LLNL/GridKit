@@ -65,7 +65,7 @@
 #include <exception>
 #include <nvector/nvector_serial.h>
 #include <sunmatrix/sunmatrix_sparse.h>    /* access to sparse SUNMatrix           */
-#include <sunlinsol/sunlinsol_klu.h>       /* access to KLU linear solver          */
+// #include <sunlinsol/sunlinsol_klu.h>       /* access to KLU linear solver          */
 #include <sunlinsol/sunlinsol_dense.h>     /* access to dense linear solver        */
 
 #include "ModelEvaluator.hpp"

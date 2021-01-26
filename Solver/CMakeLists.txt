@@ -56,7 +56,9 @@
 # 
 
 add_subdirectory(Dynamic)
-add_subdirectory(Optimization)
 add_subdirectory(SteadyState)
+if(GRIDKIT_ENABLE_IPOPT)
+  add_subdirectory(Optimization)
+endif()
 set(solver_libs ${solver_libs} PARENT_SCOPE)
 

@@ -67,6 +67,16 @@ set(solver_libs
   # generic_solver
 )
 
+# Ipopt support is disabled by default
+option(GRIDKIT_ENABLE_IPOPT "Enable Ipopt support" ON)
+
+# SUNDIALS support is enabled by default
+option(GRIDKIT_ENABLE_SUNDIALS "Enable SUNDIALS support" ON)
+
+# Enable KLU
+option(GRIDKIT_ENABLE_SUNDIALS_SPARSE "Enable SUNDIALS sparse linear solvers" OFF)
+
+
 set(CMAKE_MACOSX_RPATH 1)
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/config)
 
@@ -79,27 +89,37 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 option(BUILD_SHARED_LIBS:BOOL "Build shared libraries" ON)
 
-include(FindIpopt)
-set(CMAKE_INSTALL_RPATH  ${IPOPT_LIBRARY_DIR} ${CMAKE_INSTALL_RPATH})
+if(GRIDKIT_ENABLE_IPOPT)
+  include(FindIpopt)
+  set(CMAKE_INSTALL_RPATH  ${IPOPT_LIBRARY_DIR} ${CMAKE_INSTALL_RPATH})
+endif()
 
 include(FindSUNDIALS)
 set(CMAKE_INSTALL_RPATH  ${SUNDIALS_LIBRARY_DIR} ${CMAKE_INSTALL_RPATH})
 
-include(FindSuiteSparse)
-set(CMAKE_INSTALL_RPATH  ${SUITESPARSE_LIBRARY_DIR} ${CMAKE_INSTALL_RPATH})
+if(GRIDKIT_ENABLE_SUNDIALS_SPARSE)
+  include(FindSuiteSparse)
+  set(CMAKE_INSTALL_RPATH  ${SUITESPARSE_LIBRARY_DIR} ${CMAKE_INSTALL_RPATH})
+endif()
 
 include_directories(${SUITESPARSE_INCLUDE_DIR} ${SUNDIALS_INCLUDE_DIR} ${IPOPT_INCLUDE_DIR})
+
+# Set up configuration header file
+# configure_file(gridkit_config.h.in gridkit_config.h)
 
 add_subdirectory(ComponentLib)
 add_subdirectory(Solver)
 add_subdirectory(Examples)
 
+install(FILES gridkit_config.hpp DESTINATION include)
+
 # TESTING
 enable_testing()
 add_test(NAME AdjointSens COMMAND $<TARGET_FILE:adjoint>)
-add_test(NAME DynamicConOpt COMMAND $<TARGET_FILE:dynconopt>)
-add_test(NAME GenConstLoad COMMAND $<TARGET_FILE:genconstload>)
-add_test(NAME GenInfiniteBus COMMAND $<TARGET_FILE:geninfbus>)
-add_test(NAME ParameterEst COMMAND $<TARGET_FILE:paramest> ${CMAKE_SOURCE_DIR}/Examples/ParameterEstimation/lookup_table.dat)
 add_test(NAME Grid3Bus COMMAND $<TARGET_FILE:grid3bus>)
-
+if(GRIDKIT_ENABLE_IPOPT)
+  add_test(NAME DynamicConOpt COMMAND $<TARGET_FILE:dynconopt>)
+  add_test(NAME GenConstLoad COMMAND $<TARGET_FILE:genconstload>)
+  add_test(NAME GenInfiniteBus COMMAND $<TARGET_FILE:geninfbus>)
+  add_test(NAME ParameterEst COMMAND $<TARGET_FILE:paramest> ${CMAKE_SOURCE_DIR}/Examples/ParameterEstimation/lookup_table.dat)
+endif()

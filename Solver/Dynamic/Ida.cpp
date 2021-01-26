@@ -61,7 +61,7 @@
 #include <iostream>
 #include <iomanip>
 
-#include <klu.h>
+// #include <klu.h>
 #include <idas/idas_direct.h>              /* access to IDADls interface           */
 #include <idas/idas.h>
 
