@@ -6,7 +6,7 @@
  * LLNL-CODE-718378.
  * All rights reserved.
  *
- * This file is part of GridKit. For details, see github.com/LLNL/GridKit
+ * This file is part of GridKit™. For details, see github.com/LLNL/GridKit
  * Please also read the LICENSE file.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -139,7 +139,7 @@ bool DynamicObjective<ScalarT, IdxT>::get_starting_point(Index n, bool init_x, N
     assert(init_lambda == false);
 
     // Initialize optimization parameters x
-    for(unsigned int i = 0; i < model_->size_opt(); ++i)
+    for(IdxT i = 0; i < model_->size_opt(); ++i)
         x[i] = model_->param()[i];
 
     return true;
@@ -169,7 +169,7 @@ bool DynamicObjective<ScalarT, IdxT>::eval_f(Index n, const Number* x, bool new_
 template <class ScalarT, typename IdxT>
 bool DynamicObjective<ScalarT, IdxT>::eval_grad_f(Index n, const Number* x, bool new_x, Number* grad_f)
 {
-    assert(model_->size_opt() == n);
+    assert(model_->size_opt() == static_cast<IdxT>(n));
     // Update optimization parameters
     for(IdxT i = 0; i < model_->size_opt(); ++i)
         model_->param()[i] = x[i];

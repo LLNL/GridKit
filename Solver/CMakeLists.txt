@@ -5,7 +5,7 @@
 # LLNL-CODE-718378.
 # All rights reserved.
 # 
-# This file is part of GridKit. For details, see github.com/LLNL/GridKit 
+# This file is part of GridKit™. For details, see github.com/LLNL/GridKit 
 # Please also read the LICENSE file. 
 # 
 # Redistribution and use in source and binary forms, with or without 
@@ -56,6 +56,9 @@
 # 
 
 add_subdirectory(Dynamic)
-add_subdirectory(Optimization)
+add_subdirectory(SteadyState)
+if(GRIDKIT_ENABLE_IPOPT)
+  add_subdirectory(Optimization)
+endif()
 set(solver_libs ${solver_libs} PARENT_SCOPE)
 

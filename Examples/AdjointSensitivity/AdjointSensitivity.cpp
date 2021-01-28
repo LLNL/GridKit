@@ -6,7 +6,7 @@
  * LLNL-CODE-718378.
  * All rights reserved.
  *
- * This file is part of GridKit. For details, see github.com/LLNL/GridKit
+ * This file is part of GridKit™. For details, see github.com/LLNL/GridKit
  * Please also read the LICENSE file.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -65,6 +65,7 @@
 #include <ComponentLib/Generator4/Generator4.hpp>
 #include <SystemModel.hpp>
 #include <Solver/Dynamic/Ida.hpp>
+#include <Utilities/Testing.hpp>
 
 /*
  * Compute gradient of an objective function expressed as an integral over
@@ -81,6 +82,7 @@ int main()
     using namespace ModelLib;
     using namespace AnalysisManager::Sundials;
     using namespace AnalysisManager;
+    using namespace GridKit::Testing;
 
     // Create an infinite bus
     BaseBus<double, size_t>* bus = new BusSlack<double, size_t>(1.0, 0.0);
@@ -137,7 +139,7 @@ int main()
     idas->printFinalStats();
 
     const double g1 = Q[0];
-    const double eps = 1e-4;
+    const double eps = 2e-3;
 
     // Compute gradient of the objective function numerically
     std::vector<double> dGdp(model->size_opt());
@@ -180,13 +182,21 @@ int main()
     idas->printFinalStats();
 
     // Compare results
+    int retval = 0;
     std::cout << "\n\nComparison of numerical and adjoint results:\n\n";
     double* neg_dGdp = idas->getAdjointIntegral();
     for (unsigned i=0; i<model->size_opt(); ++i)
     {
-      std::cout << "dG/dp" << i << " (numerical) = " <<      dGdp[i] << "\n";
-      std::cout << "dG/dp" << i << " (adjoint)   = " << -neg_dGdp[i] << "\n\n";
+        std::cout << "dG/dp" << i << " (numerical) = " <<      dGdp[i] << "\n";
+        std::cout << "dG/dp" << i << " (adjoint)   = " << -neg_dGdp[i] << "\n\n";
+        if(!isEqual(dGdp[i], -neg_dGdp[i], 10*eps))
+            --retval; 
     }
 
-    return 0;
+    if(retval < 0)
+    {
+        std::cout << "The two results differ beyond solver tolerance!\n";
+    }
+
+    return retval;
 }

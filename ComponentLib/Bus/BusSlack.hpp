@@ -6,7 +6,7 @@
  * LLNL-CODE-718378.
  * All rights reserved.
  *
- * This file is part of GridKit. For details, see github.com/LLNL/GridKit
+ * This file is part of GridKit™. For details, see github.com/LLNL/GridKit
  * Please also read the LICENSE file.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -138,23 +138,23 @@ namespace ModelLib
         /// @todo Should slack bus allow changing voltage?
         virtual ScalarT& lambdaP()
         {
-            return VB_;
+            return thetaB_;
         }
 
         virtual const ScalarT& lambdaP() const
         {
-            return VB_;
+            return thetaB_;
         }
 
         /// @todo Should slack bus allow changing phase?
         virtual ScalarT& lambdaQ()
         {
-            return thetaB_;
+            return VB_;
         }
 
         virtual const ScalarT& lambdaQ() const
         {
-            return thetaB_;
+            return VB_;
         }
 
         virtual ScalarT& PB()

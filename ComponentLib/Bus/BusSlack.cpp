@@ -6,7 +6,7 @@
  * LLNL-CODE-718378.
  * All rights reserved.
  *
- * This file is part of GridKit. For details, see github.com/LLNL/GridKit
+ * This file is part of GridKit™. For details, see github.com/LLNL/GridKit
  * Please also read the LICENSE file.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -107,6 +107,7 @@ BusSlack<ScalarT, IdxT>::~BusSlack()
 template <class ScalarT, typename IdxT>
 int BusSlack<ScalarT, IdxT>::evaluateResidual()
 {
+    // std::cout << "Evaluating residual of a slack bus ...\n";
     P() = 0.0;
     Q() = 0.0;
     return 0;

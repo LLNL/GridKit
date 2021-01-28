@@ -6,7 +6,7 @@
  * LLNL-CODE-718378.
  * All rights reserved.
  *
- * This file is part of GridKit. For details, see github.com/LLNL/GridKit
+ * This file is part of GridKit™. For details, see github.com/LLNL/GridKit
  * Please also read the LICENSE file.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -117,6 +117,7 @@ namespace ModelLib
         virtual int evaluateAdjointResidual() { return 0;}
         //virtual int evaluateAdjointJacobian() { return 0;}
         virtual int evaluateAdjointIntegrand() { return 0;}
+        virtual void updateTime(real_type, real_type) {} // <- throw exception here
 
         // Pure virtual methods specific to Bus types
         virtual ScalarT& V() = 0;

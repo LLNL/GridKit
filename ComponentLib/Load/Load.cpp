@@ -6,7 +6,7 @@
  * LLNL-CODE-718378.
  * All rights reserved.
  *
- * This file is part of GridKit. For details, see github.com/LLNL/GridKit
+ * This file is part of GridKit™. For details, see github.com/LLNL/GridKit
  * Please also read the LICENSE file.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -79,6 +79,7 @@ Load<ScalarT, IdxT>::Load(bus_type* bus, ScalarT P, ScalarT Q)
     bus_(bus)
 {
     //std::cout << "Create a load model with " << size_ << " variables ...\n";
+    size_ = 0;
 }
 
 template <class ScalarT, typename IdxT>
@@ -121,8 +122,9 @@ int Load<ScalarT, IdxT>::tagDifferentiable()
 template <class ScalarT, typename IdxT>
 int Load<ScalarT, IdxT>::evaluateResidual()
 {
-    bus_->P() += P_;
-    bus_->Q() += Q_;
+    // std::cout << "Evaluating load residual ...\n";
+    bus_->P() -= P_;
+    bus_->Q() -= Q_;
     return 0;
 }
 

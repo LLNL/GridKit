@@ -6,7 +6,7 @@
  * LLNL-CODE-718378.
  * All rights reserved.
  *
- * This file is part of GridKit. For details, see github.com/LLNL/GridKit
+ * This file is part of GridKit™. For details, see github.com/LLNL/GridKit
  * Please also read the LICENSE file.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -65,7 +65,7 @@
 #include <exception>
 #include <nvector/nvector_serial.h>
 #include <sunmatrix/sunmatrix_sparse.h>    /* access to sparse SUNMatrix           */
-#include <sunlinsol/sunlinsol_klu.h>       /* access to KLU linear solver          */
+// #include <sunlinsol/sunlinsol_klu.h>       /* access to KLU linear solver          */
 #include <sunlinsol/sunlinsol_dense.h>     /* access to dense linear solver        */
 
 #include "ModelEvaluator.hpp"
@@ -158,6 +158,7 @@ namespace AnalysisManager
             }
 
             void printOutput(realtype t);
+            void printSpecial(realtype t, N_Vector x);
             void printFinalStats();
 
         private:

@@ -5,7 +5,7 @@
 # LLNL-CODE-718378.
 # All rights reserved.
 #
-# This file is part of GridKit. For details, see github.com/LLNL/GridKit
+# This file is part of GridKit™. For details, see github.com/LLNL/GridKit
 # Please also read the LICENSE file.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -56,6 +56,10 @@
 #
 
 add_subdirectory(AdjointSensitivity)
-add_subdirectory(DynamicConstrainedOpt)
-add_subdirectory(GenConstLoad)
-add_subdirectory(GenInfiniteBus)
+add_subdirectory(Grid3Bus)
+if(GRIDKIT_ENABLE_IPOPT)
+  add_subdirectory(DynamicConstrainedOpt)
+  add_subdirectory(GenConstLoad)
+  add_subdirectory(GenInfiniteBus)
+  add_subdirectory(ParameterEstimation)
+endif()

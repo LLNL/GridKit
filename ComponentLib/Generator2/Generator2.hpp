@@ -6,7 +6,7 @@
  * LLNL-CODE-718378.
  * All rights reserved.
  *
- * This file is part of GridKit. For details, see github.com/LLNL/GridKit
+ * This file is part of GridKit™. For details, see github.com/LLNL/GridKit
  * Please also read the LICENSE file.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -109,6 +109,12 @@ namespace ModelLib
         //int evaluateAdjointJacobian();
         int evaluateAdjointIntegrand();
 
+        void updateTime(real_type t, real_type a)
+        {
+            time_ = t;
+            alpha_ = a;
+        }
+        
         const ScalarT& V() const
         {
             return bus_->V();

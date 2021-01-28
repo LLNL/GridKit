@@ -6,7 +6,7 @@
  * LLNL-CODE-718378.
  * All rights reserved.
  *
- * This file is part of GridKit. For details, see github.com/LLNL/GridKit
+ * This file is part of GridKit™. For details, see github.com/LLNL/GridKit
  * Please also read the LICENSE file.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -70,14 +70,14 @@
 #include <IpSolveStatistics.hpp>
 #include <Solver/Optimization/DynamicObjective.hpp>
 #include <Solver/Optimization/DynamicConstraint.hpp>
-
-
+#include <Utilities/Testing.hpp>
 
 int main()
 {
     using namespace ModelLib;
     using namespace AnalysisManager::Sundials;
     using namespace AnalysisManager;
+    using namespace GridKit::Testing;
 
     // Create an infinite bus
     BaseBus<double, size_t>* bus = new BusSlack<double, size_t>(1.0, 0.0);
@@ -122,6 +122,9 @@ int main()
     // Set integration time for dynamic constrained optimization
     idas->setIntegrationTime(t_init, t_final, 100);
 
+    // Guess optimization parameter value
+    double Pm = 0.7;
+
     // Create an instance of the IpoptApplication
     Ipopt::SmartPtr<Ipopt::IpoptApplication> ipoptApp = IpoptApplicationFactory();
 
@@ -133,18 +136,24 @@ int main()
         return (int) status;
     }
 
+    // Set solver tolerance
+    const double tol = 1e-4; 
+
     // Configure Ipopt application
     ipoptApp->Options()->SetStringValue("hessian_approximation", "limited-memory");
-    ipoptApp->Options()->SetNumericValue("tol", 1e-4);
+    ipoptApp->Options()->SetNumericValue("tol", tol);
     ipoptApp->Options()->SetIntegerValue("print_level", 0);
 
     // Create dynamic objective interface to Ipopt solver
     Ipopt::SmartPtr<Ipopt::TNLP> ipoptDynamicObjectiveInterface =
         new IpoptInterface::DynamicObjective<double, size_t>(idas);
 
+    // Initialize problem
+    model->param()[0] = Pm;
+
     // Solve the problem
     status = ipoptApp->OptimizeTNLP(ipoptDynamicObjectiveInterface);
-    std::cout << "\n\nProblem formulated as dynamic objective optimiztion ...\n";
+    std::cout << "\n\nProblem formulated as dynamic objective optimization ...\n";
 
     if (status == Ipopt::Solve_Succeeded) {
         // Print result
@@ -153,15 +162,25 @@ int main()
                   << " Optimal value of Pm = " << model->param()[0] << "\n"
                   << " The final value of the objective function G(Pm) = "
                   << ipoptApp->Statistics()->FinalObjective() << "\n\n";
+    }
+
+    // Store dynamic objective optimization results
+    double* results  = new double[model->size_opt()];
+    for(unsigned i=0; i <model->size_opt(); ++i)
+    {
+        results[i] = model->param()[i];
     }
 
     // Create dynamic constraint interface to Ipopt solver
     Ipopt::SmartPtr<Ipopt::TNLP> ipoptDynamicConstraintInterface =
         new IpoptInterface::DynamicConstraint<double, size_t>(idas);
 
+    // Initialize problem
+    model->param()[0] = Pm;
+    
     // Solve the problem
     status = ipoptApp->OptimizeTNLP(ipoptDynamicConstraintInterface);
-    std::cout << "\n\nProblem formulated as dynamic constraint optimiztion ...\n";
+    std::cout << "\n\nProblem formulated as dynamic constraint optimization ...\n";
 
     if (status == Ipopt::Solve_Succeeded) {
         // Print result
@@ -172,7 +191,21 @@ int main()
                   << ipoptApp->Statistics()->FinalObjective() << "\n\n";
     }
 
+    // Compare results of the two optimization methods
+    int retval = 0;
+    for(unsigned i=0; i <model->size_opt(); ++i)
+    {
+        if(!isEqual(results[i], model->param()[i], 10*tol))
+            --retval; 
+    }
+
+    if(retval < 0)
+    {
+        std::cout << "The two results differ beyond solver tolerance!\n";
+    }
+
+    delete [] results;
     delete idas;
     delete model;
-    return 0;
+    return retval;
 }

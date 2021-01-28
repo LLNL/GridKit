@@ -6,7 +6,7 @@
  * LLNL-CODE-718378.
  * All rights reserved.
  *
- * This file is part of GridKit. For details, see github.com/LLNL/GridKit
+ * This file is part of GridKit™. For details, see github.com/LLNL/GridKit
  * Please also read the LICENSE file.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -114,12 +114,12 @@ namespace ModelLib
             return size_opt_;
         }
 
-        virtual void updateTime(real_type t, real_type a)
-        {
-            time_ = t;
-            alpha_ = a;
-            //std::cout << "t = " << t << "\n";
-        }
+        // virtual void updateTime(real_type t, real_type a)
+        // {
+        //     time_ = t;
+        //     alpha_ = a;
+        //     std::cout << "updateTime: t = " << time_ << "\n";
+        // }
 
         virtual void setTolerances(real_type& rtol, real_type& atol) const
         {

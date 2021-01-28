@@ -5,7 +5,7 @@
 # LLNL-CODE-718378.
 # All rights reserved.
 #
-# This file is part of GridKit. For details, see github.com/LLNL/GridKit
+# This file is part of GridKit™. For details, see github.com/LLNL/GridKit
 # Please also read the LICENSE file.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -60,5 +60,7 @@ add_subdirectory(Bus)
 add_subdirectory(Generator2)
 add_subdirectory(Generator4)
 add_subdirectory(Generator4Governor)
+add_subdirectory(Generator4Param)
 add_subdirectory(Load)
+add_subdirectory(MiniGrid)
 set(component_models ${component_models} PARENT_SCOPE)

@@ -5,7 +5,7 @@
 # LLNL-CODE-718378.
 # All rights reserved.
 # 
-# This file is part of GridKit. For details, see github.com/LLNL/GridKit 
+# This file is part of GridKit™. For details, see github.com/LLNL/GridKit 
 # Please also read the LICENSE file. 
 # 
 # Redistribution and use in source and binary forms, with or without 
@@ -55,51 +55,73 @@
 # endorsement purposes. 
 # 
 
-set(SUITESPARSE_DIR_HINTS 
-  /usr
-  /usr/local
-  /opt
-)
+#[[
 
-# Find SUITESPARSE installation path
-find_path (SUITESPARSE_DIR NAMES include/suitesparse/klu.h HINTS ${SUITESPARSE_DIR_HINTS})
-message (STATUS "Found SUITESPARSE in ${SUITESPARSE_DIR}")
+Finds Sutiesparse include directory and libraries and exports target `Suitesparse`
+
+User may set:
+- SUITESPARSE_ROOT_DIR
+
+]]
+
+find_library(SUITESPARSE_LIBRARY
+  NAMES
+  suitesparseconfig
+  PATHS
+  ${SUITESPARSE_DIR} $ENV{SUITESPARSE_DIR} ${SUITESPARSE_ROOT_DIR}
+  ENV LD_LIBRARY_PATH ENV DYLD_LIBRARY_PATH
+  PATH_SUFFIXES
+  lib64 lib)
+if(SUITESPARSE_LIBRARY)
+  get_filename_component(SUITESPARSE_LIBRARY_DIR ${SUITESPARSE_LIBRARY} DIRECTORY CACHE)
+  set(SUITESPARSE_LIBRARY_DIR CACHE PATH "Path to Suitesparse library")
+  if(NOT SUITESPARSE_DIR) 
+    get_filename_component(SUITESPARSE_DIR ${SUITESPARSE_LIBRARY_DIR} DIRECTORY CACHE)
+  endif()
+endif()
 
 # Find SUITESPARSE header path and ensure all needed files are there
 find_path(SUITESPARSE_INCLUDE_DIR
+  NAMES
   amd.h
   colamd.h
   klu.h
-  HINTS ${SUITESPARSE_DIR}/include/suitesparse
-)
-message (STATUS "Found SUITESPARSE headers in ${SUITESPARSE_INCLUDE_DIR}")
+  PATHS
+  ${SUITESPARSE_DIR} ${SUITESPARSE_ROOT_DIR} $ENV{SUITESPARSE_DIR} ${SUITESPARSE_LIBRARY_DIR}/..
+  PATH_SUFFIXES
+  include)
 
-# Assume SUITESPARSE lib directory is in the same place as the include directory
-set(SUITESPARSE_LIBRARY_DIR 
-  ${SUITESPARSE_DIR}/lib64
-  ${SUITESPARSE_DIR}/lib
-) 
-
-# SUITESPARSE modules needed for the build
-# The order matters in case of static build!
-set(SUITESPARSE_MODULES 
-  amd
-  colamd
-  klu
-)
-
-# Find each SUITESPARSE module and add it to the list of libraries to link
-set(SUITESPARSE_LIBRARY)
-foreach(mod ${SUITESPARSE_MODULES})
-  find_library(SUITESPARSE_${mod}
-    NAMES ${mod}
-    HINTS ${SUITESPARSE_LIBRARY_DIR}
-  )
-  if(SUITESPARSE_${mod})
-    set(SUITESPARSE_LIBRARY ${SUITESPARSE_LIBRARY} ${SUITESPARSE_${mod}})
-  else()
-    # unset ${SUITESPARSE_LIBRARY_DIR} and ask user to supply it
+if(SUITESPARSE_LIBRARY AND SUITESPARSE_INCLUDE_DIR)
+  set(SUITESPARSE_INCLUDE_DIR CACHE PATH "Path to Suitesparse header files")
+  # SUITESPARSE modules needed for the build
+  # The order matters in case of static build!
+  set(SUITESPARSE_MODULES 
+    amd
+    colamd
+    klu)
+  unset(SUITESPARSE_LIBRARY CACHE)
+  foreach(mod ${SUITESPARSE_MODULES})
+    find_library(SUITESPARSE_${mod}
+      NAMES ${mod}
+      HINTS ${SUITESPARSE_LIBRARY_DIR})
+    if(SUITESPARSE_${mod})
+      set(SUITESPARSE_LIBRARY ${SUITESPARSE_LIBRARY} ${SUITESPARSE_${mod}})
+    else()
+      # unset ${SUITESPARSE_LIBRARY_DIR} and ask user to supply it
+    endif()
+  endforeach()
+  message (STATUS "Found SUITESPARSE libraries in ${SUITESPARSE_LIBRARY_DIR}")
+else()
+  if(NOT SUITESPARSE_ROOT_DIR)
+    message(STATUS "Suitesparse dir not found! Please provide correct filepath.")
+    set(SUITESPARSE_DIR CACHE PATH "Path to Suitesparse installation root.")
+    unset(SUITESPARSE_LIBRARY CACHE)
+    unset(SUITESPARSE_INCLUDE_DIR CACHE)
+  elseif(NOT SUITESPARSE_LIBRARY)
+    message(STATUS "Suitesparse library not found! Please provide correct filepath.")
   endif()
-endforeach()
-message (STATUS "Found SUITESPARSE libraries ${SUITESPARSE_LIBRARY}")
+  if(SUITESPARSE_ROOT_DIR AND NOT SUITESPARSE_INCLUDE_DIR)
+    message(STATUS "Suitesparse include dir not found! Please provide correct filepath.")
+  endif()
+endif()
 

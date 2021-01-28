@@ -6,7 +6,7 @@
  * LLNL-CODE-718378.
  * All rights reserved.
  *
- * This file is part of GridKit. For details, see github.com/LLNL/GridKit
+ * This file is part of GridKit™. For details, see github.com/LLNL/GridKit
  * Please also read the LICENSE file.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -77,16 +77,27 @@ namespace ModelLib {
 
 template <class ScalarT, typename IdxT>
 Branch<ScalarT, IdxT>::Branch(bus_type* bus1, bus_type* bus2)
-  : gL_( 100.0),
-    bL_(-100.0),
-    gL1_(0.0),
-    bL1_(0.01),
-    gL2_(0.0),
-    bL2_(0.01),
+  : R_(0.0),
+    X_(0.01),
+    G_(0.0),
+    B_(0.0),
+    bus1_(bus1),
+    bus2_(bus2)
+{
+    size_ = 0;
+}
+
+template <class ScalarT, typename IdxT>
+Branch<ScalarT, IdxT>::Branch(real_type R, real_type X, real_type G, real_type B, bus_type* bus1, bus_type* bus2)
+  : R_(R),
+    X_(X),
+    G_(G),
+    B_(B),
     bus1_(bus1),
     bus2_(bus2)
 {
 }
+
 
 template <class ScalarT, typename IdxT>
 Branch<ScalarT, IdxT>::~Branch()
@@ -126,15 +137,21 @@ int Branch<ScalarT, IdxT>::tagDifferentiable()
 /**
  * \brief Residual contribution of the branch is pushed to the
  * two terminal buses.
+ * 
+ * @todo Add and verify conductance to ground (B and G)
  */
 template <class ScalarT, typename IdxT>
 int Branch<ScalarT, IdxT>::evaluateResidual()
 {
+    // std::cout << "Evaluating branch residual ...\n";
+    real_type b = -X_/(R_*R_ + X_*X_);
+    real_type g =  R_/(R_*R_ + X_*X_);
     ScalarT dtheta = theta1() - theta2();
-    P1() +=  V1()*V1()*(gL_ + gL1_) - V1()*V2()*(gL_*cos(dtheta) + bL_*sin(dtheta));
-    Q1() += -V1()*V1()*(bL_ + bL1_) - V1()*V2()*(gL_*sin(dtheta) - bL_*cos(dtheta));
-    P2() +=  V2()*V2()*(gL_ + gL2_) - V1()*V2()*(gL_*cos(dtheta) - bL_*sin(dtheta));
-    Q2() += -V2()*V2()*(bL_ + bL2_) + V1()*V2()*(gL_*sin(dtheta) + bL_*cos(dtheta));
+
+    P1() -= ( g + 0.5*G_)*V1()*V1() + V1()*V2()*(-g*cos(dtheta) - b*sin(dtheta));
+    Q1() -= (-b - 0.5*B_)*V1()*V1() + V1()*V2()*(-g*sin(dtheta) + b*cos(dtheta));
+    P2() -= ( g + 0.5*G_)*V2()*V2() + V1()*V2()*(-g*cos(dtheta) + b*sin(dtheta));
+    Q2() -= (-b - 0.5*B_)*V2()*V2() + V1()*V2()*( g*sin(dtheta) + b*cos(dtheta));
 
     return 0;
 }

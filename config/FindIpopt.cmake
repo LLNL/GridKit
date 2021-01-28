@@ -5,7 +5,7 @@
 # LLNL-CODE-718378.
 # All rights reserved.
 # 
-# This file is part of GridKit. For details, see github.com/LLNL/GridKit 
+# This file is part of GridKit™. For details, see github.com/LLNL/GridKit 
 # Please also read the LICENSE file. 
 # 
 # Redistribution and use in source and binary forms, with or without 
@@ -55,39 +55,62 @@
 # endorsement purposes. 
 # 
 
-# Find Ipopt installation path
-find_path (IPOPT_DIR NAMES share/coin/doc/Ipopt/ipopt_addlibs_cpp.txt HINTS ~/local/ipopt)
-message (STATUS "Found Ipopt in ${IPOPT_DIR}")
+#[[
 
-# Find Ipopt header path and ensure all needed files are there
-find_path(IPOPT_INCLUDE_DIR
-  IpTNLP.hpp
-  HINTS ${IPOPT_DIR}/include/coin
-)
-message (STATUS "Found Ipopt headers in ${IPOPT_INCLUDE_DIR}")
+Finds Ipopt include directory and libraries and exports target `Ipopt`
 
-# Assume Ipopt lib directory is in the same place as the include directory
-set(IPOPT_LIBRARY_DIR ${IPOPT_DIR}/lib)
+User may set:
+- IPOPT_ROOT_DIR
 
-# Ipopt modules needed for the build
-# The order matters in case of static build!
-set(IPOPT_MODULES 
-  ipopt 
-  coinmetis
-  coinmumps
-)
+]]
 
-# Find each Ipopt module and add it to the list of libraries to link
-set(IPOPT_LIBRARY)
-foreach(mod ${IPOPT_MODULES})
-  find_library(IPOPT_${mod}
-    NAMES ${mod}
-    HINTS ${IPOPT_LIBRARY_DIR}
-  )
-  if(IPOPT_${mod})
-    set(IPOPT_LIBRARY ${IPOPT_LIBRARY} ${IPOPT_${mod}})
-  else()
-    # unset ${IPOPT_LIBRARY_DIR} and ask user to supply it
+find_library(IPOPT_LIBRARY
+  NAMES
+  ipopt
+  PATHS
+  ${IPOPT_DIR} $ENV{IPOPT_DIR} ${IPOPT_ROOT_DIR}
+  ENV LD_LIBRARY_PATH ENV DYLD_LIBRARY_PATH
+  PATH_SUFFIXES
+  lib64 lib)
+
+if(IPOPT_LIBRARY)
+  set(IPOPT_LIBRARY CACHE FILEPATH "Path to Ipopt library")
+  message(STATUS "Found Ipopt library: " ${IPOPT_LIBRARY})
+  get_filename_component(IPOPT_LIBRARY_DIR ${IPOPT_LIBRARY} DIRECTORY CACHE)
+  set(IPOPT_LIBRARY_DIR CACHE PATH "Path to Ipopt library")
+  if(NOT IPOPT_DIR)
+    get_filename_component(IPOPT_DIR ${IPOPT_LIBRARY_DIR} DIRECTORY CACHE)
   endif()
-endforeach()
-message (STATUS "Found Ipopt libraries ${IPOPT_LIBRARY}")
+endif()
+
+find_path(IPOPT_INCLUDE_DIR
+  NAMES
+  IpTNLP.hpp
+  PATHS
+  ${IPOPT_DIR} ${IPOPT_ROOT_DIR} $ENV{IPOPT_DIR} ${IPOPT_LIBRARY_DIR}/..
+  PATH_SUFFIXES
+  include
+  include/coin
+  include/coin-or
+  include/coinor)
+
+if(IPOPT_LIBRARY AND IPOPT_INCLUDE_DIR)
+  set(IPOPT_INCLUDE_DIR CACHE PATH "Path to Ipopt header files")
+  message(STATUS "Found Ipopt include directory: " ${IPOPT_INCLUDE_DIR})
+  add_library(Ipopt INTERFACE)
+  target_link_libraries(Ipopt INTERFACE ${IPOPT_LIBRARY})
+  target_include_directories(Ipopt INTERFACE ${IPOPT_INCLUDE_DIR})
+else()
+  if(NOT IPOPT_ROOT_DIR)
+    message(STATUS "Ipopt dir not found! Please provide correct filepath.")
+    set(IPOPT_DIR CACHE PATH "Path to Ipopt installation root.")
+    unset(IPOPT_INCLUDE_DIR CACHE)
+    unset(IPOPT_LIBRARY CACHE)
+  elseif(NOT IPOPT_LIB)
+    message(STATUS "Ipopt library not found! Please provide correct filepath.")
+  endif()
+  if(IPOPT_ROOT_DIR AND NOT IPOPT_INCLUDE_DIR)
+    message(STATUS "Ipopt include directory  not found! Please provide correct path.")
+  endif()
+endif()
+

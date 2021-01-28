@@ -6,7 +6,7 @@
  * LLNL-CODE-718378.
  * All rights reserved.
  *
- * This file is part of GridKit. For details, see github.com/LLNL/GridKit
+ * This file is part of GridKit™. For details, see github.com/LLNL/GridKit
  * Please also read the LICENSE file.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -64,6 +64,7 @@
 #include <vector>
 #include <cassert>
 
+#include <ScalarTraits.hpp>
 #include <ModelEvaluatorImpl.hpp>
 
 namespace ModelLib
@@ -84,6 +85,7 @@ class SystemModel : public ModelEvaluatorImpl<ScalarT, IdxT>
 {
     typedef BaseBus<ScalarT, IdxT> bus_type;
     typedef ModelEvaluatorImpl<ScalarT, IdxT> component_type;
+    using real_type = typename ModelEvaluatorImpl<ScalarT, IdxT>::real_type;
 
     using ModelEvaluatorImpl<ScalarT, IdxT>::size_;
     using ModelEvaluatorImpl<ScalarT, IdxT>::size_quad_;
@@ -670,6 +672,14 @@ public:
             }
         }
         return 0;
+    }
+
+    void updateTime(real_type t, real_type a)
+    {
+        for(const auto& component : components_)
+        {
+            component->updateTime(t, a);
+        }
     }
 
     void addBus(bus_type* bus)

@@ -5,7 +5,7 @@
 # LLNL-CODE-718378.
 # All rights reserved.
 #
-# This file is part of GridKit. For details, see github.com/LLNL/GridKit
+# This file is part of GridKit™. For details, see github.com/LLNL/GridKit
 # Please also read the LICENSE file.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -55,5 +55,6 @@
 # endorsement purposes.
 #
 
-add_library(Generator4Governor Generator4Governor.cpp)
-set(component_models ${component_models} Generator4Governor PARENT_SCOPE)
+add_library(Generator4Governor SHARED Generator4Governor.cpp)
+install(TARGETS Generator4Governor LIBRARY DESTINATION lib)
+# set(component_models ${component_models} Generator4Governor PARENT_SCOPE)
