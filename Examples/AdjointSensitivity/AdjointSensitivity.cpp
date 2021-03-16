@@ -169,7 +169,7 @@ int main()
     idas->getSavedInitialCondition();
     idas->initializeSimulation(t_init);
     idas->initializeQuadrature();
-    idas->runForwardSimulation(t_final);
+    idas->runForwardSimulation(t_final, 100);
 
     std::cout << "\n\nCost of forward simulation for adjoint\n"
               << "sensitivity analysis:\n\n";
