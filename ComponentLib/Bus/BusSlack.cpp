@@ -97,6 +97,7 @@ BusSlack<ScalarT, IdxT>::BusSlack(ScalarT V, ScalarT theta)
 {
     //std::cout << "Create BusSlack..." << std::endl;
     //std::cout << "Number of equations is " << size_ << std::endl;
+    size_ = 0;
 }
 
 template <class ScalarT, typename IdxT>
