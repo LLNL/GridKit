@@ -55,6 +55,14 @@
 # endorsement purposes.
 #
 
-add_library(MiniGrid SHARED MiniGrid.cpp)
-install(TARGETS MiniGrid LIBRARY DESTINATION lib)
-# set(component_models ${component_models} MiniGrid PARENT_SCOPE)
+# [[
+#  Author(s):
+#    - Cameron Rutherford <cameron.rutherford@pnnl.gov>
+#]]
+
+gridkit_add_library(minigrid
+  SOURCES
+    MiniGrid.cpp
+  OUTPUT_NAME
+    gridkit_minigrid)
+

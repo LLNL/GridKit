@@ -55,8 +55,20 @@
 # endorsement purposes.
 #
 
-include_directories(${IPOPT_INCLUDE_DIR})
-add_library(DynamicOpt SHARED DynamicObjective.cpp DynamicConstraint.cpp)
-target_link_libraries(DynamicOpt Ida ${IPOPT_LIBRARY} ${LAPACK_LIBRARIES})
-set(solver_libs ${solver_libs} DynamicOpt PARENT_SCOPE)
-install(TARGETS DynamicOpt LIBRARY DESTINATION lib)
+# [[
+#  Author(s):
+#    - Cameron Rutherford <cameron.rutherford@pnnl.gov>
+#]]
+
+gridkit_add_library(solvers_opt
+  SOURCES
+    DynamicObjective.cpp
+    DynamicConstraint.cpp
+  LINK_LIBRARIES
+    PUBLIC SUNDIALS::nvecserial
+    PUBLIC SUNDIALS::idas
+    PUBLIC IPOPT
+    PUBLIC GRIDKIT::solvers_dyn
+  OUTPUT_NAME
+    gridkit_solvers_opt)
+

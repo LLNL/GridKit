@@ -55,8 +55,19 @@
 # endorsement purposes.
 #
 
-include_directories(${SUITESPARSE_INCLUDE_DIR} ${SUNDIALS_INCLUDE_DIR})
-add_library(Ida SHARED Ida.cpp)
-target_link_libraries(Ida ${SUITESPARSE_LIBRARY} ${SUNDIALS_LIBRARY})
-set(solver_libs ${solver_libs} Ida PARENT_SCOPE)
-install(TARGETS Ida LIBRARY DESTINATION lib)
+# [[
+#  Author(s):
+#    - Cameron Rutherford <cameron.rutherford@pnnl.gov>
+#]]
+
+gridkit_add_library(solvers_dyn
+  SOURCES
+    Ida.cpp
+  LINK_LIBRARIES
+    PUBLIC SUNDIALS::nvecserial
+    PUBLIC SUNDIALS::idas
+    PUBLIC SUNDIALS::kinsol
+    PUBLIC IPOPT
+  OUTPUT_NAME
+    gridkit_solvers_dyn)
+

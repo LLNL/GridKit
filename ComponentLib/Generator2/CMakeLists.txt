@@ -55,6 +55,14 @@
 # endorsement purposes. 
 # 
 
-add_library(Generator2 SHARED Generator2.cpp)
-install(TARGETS Generator2 LIBRARY DESTINATION lib)
-# set(component_models ${component_models} Generator2 PARENT_SCOPE)
+# [[
+#  Author(s):
+#    - Cameron Rutherford <cameron.rutherford@pnnl.gov>
+#]]
+
+gridkit_add_library(generator2
+  SOURCES
+    Generator2.cpp
+  OUTPUT_NAME
+    gridkit_generator2)
+

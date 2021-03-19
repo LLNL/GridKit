@@ -55,10 +55,15 @@
 # endorsement purposes.
 #
 
+# [[
+#  Author(s):
+#    - Cameron Rutherford <cameron.rutherford@pnnl.gov>
+#]]
+
 # add_executable(grid3bus Grid3Bus.cpp)
-# target_link_libraries(grid3bus MiniGrid ${solver_libs})
+# target_link_libraries(grid3bus GRIDKIT::minigrid GRIDKIT::solvers_steady)
 # install(TARGETS grid3bus RUNTIME DESTINATION bin)
 
 add_executable(grid3bus Grid3BusSys.cpp)
-target_link_libraries(grid3bus MiniGrid Bus Branch Load ${solver_libs})
+target_link_libraries(grid3bus GRIDKIT::minigrid GRIDKIT::bus GRIDKIT::branch GRIDKIT::load GRIDKIT::solvers_steady)
 install(TARGETS grid3bus RUNTIME DESTINATION bin)

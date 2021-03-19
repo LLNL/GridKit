@@ -55,7 +55,12 @@
 # endorsement purposes.
 #
 
+# [[
+#  Author(s):
+#    - Cameron Rutherford <cameron.rutherford@pnnl.gov>
+#]]
+
 add_executable(paramest ParameterEstimation.cpp)
-target_link_libraries(paramest Bus Generator4Param ${solver_libs})
+target_link_libraries(paramest GRIDKIT::bus GRIDKIT::generator4param GRIDKIT::solvers_opt GRIDKIT::solvers_dyn)
 install(TARGETS paramest RUNTIME DESTINATION bin)
 install(FILES lookup_table.dat DESTINATION bin)

@@ -55,6 +55,14 @@
 # endorsement purposes.
 #
 
-add_library(Load SHARED Load.cpp)
-install(TARGETS Load LIBRARY DESTINATION lib)
-# set(component_models ${component_models} Load PARENT_SCOPE)
+# [[
+#  Author(s):
+#    - Cameron Rutherford <cameron.rutherford@pnnl.gov>
+#]]
+
+gridkit_add_library(load
+  SOURCES
+    Load.cpp
+  OUTPUT_NAME
+    gridkit_load)
+

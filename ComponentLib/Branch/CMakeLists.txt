@@ -55,6 +55,14 @@
 # endorsement purposes. 
 # 
 
-add_library(Branch SHARED Branch.cpp)
-install(TARGETS Branch LIBRARY DESTINATION lib)
-# set(component_models ${component_models} Branch PARENT_SCOPE)
+# [[
+#  Author(s):
+#    - Cameron Rutherford <cameron.rutherford@pnnl.gov>
+#]]
+
+gridkit_add_library(branch
+  SOURCES
+    Branch.cpp
+  OUTPUT_NAME
+    gridkit_branch)
+

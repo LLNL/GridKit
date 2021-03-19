@@ -55,6 +55,12 @@
 # endorsement purposes.
 #
 
+# [[
+#  Author(s):
+#    - Cameron Rutherford <cameron.rutherford@pnnl.gov>
+#]]
+
 add_executable(geninfbus GenInfiniteBus.cpp)
-target_link_libraries(geninfbus Bus Generator4 ${solver_libs})
-install(TARGETS geninfbus RUNTIME DESTINATION bin)
+target_link_libraries(geninfbus GRIDKIT::bus GRIDKIT::generator4 GRIDKIT::solvers_opt GRIDKIT::solvers_dyn)
+install(TARGETS geninfbus DESTINATION bin)
+
