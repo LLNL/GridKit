@@ -55,6 +55,14 @@
 # endorsement purposes.
 #
 
-add_library(Generator4Param Generator4Param.cpp)
-install(TARGETS Generator4Param LIBRARY DESTINATION lib)
-# set(component_models ${component_models} Generator4Param PARENT_SCOPE)
+# [[
+#  Author(s):
+#    - Cameron Rutherford <cameron.rutherford@pnnl.gov>
+#]]
+
+gridkit_add_library(generator4param
+  SOURCES
+    Generator4Param.cpp
+  OUTPUT_NAME
+    gridkit_generator4param)
+

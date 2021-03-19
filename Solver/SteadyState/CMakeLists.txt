@@ -55,8 +55,16 @@
 # endorsement purposes.
 #
 
-include_directories(${SUITESPARSE_INCLUDE_DIR} ${SUNDIALS_INCLUDE_DIR})
-add_library(Kinsol SHARED Kinsol.cpp)
-target_link_libraries(Kinsol ${SUITESPARSE_LIBRARY} ${SUNDIALS_LIBRARY})
-set(solver_libs ${solver_libs} Kinsol PARENT_SCOPE)
-install(TARGETS Kinsol LIBRARY DESTINATION lib)
+# [[
+#  Author(s):
+#    - Cameron Rutherford <cameron.rutherford@pnnl.gov>
+#]]
+
+gridkit_add_library(solvers_steady
+  SOURCES
+    Kinsol.cpp
+  LINK_LIBRARIES
+    PUBLIC SUNDIALS::kinsol
+  OUTPUT_NAME
+    gridkit_solvers_steady)
+

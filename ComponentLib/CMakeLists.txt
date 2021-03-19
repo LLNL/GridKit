@@ -55,6 +55,11 @@
 # endorsement purposes.
 #
 
+# [[
+#  Author(s):
+#    - Cameron Rutherford <cameron.rutherford@pnnl.gov>
+#]]
+
 add_subdirectory(Branch)
 add_subdirectory(Bus)
 add_subdirectory(Generator2)
@@ -63,4 +68,3 @@ add_subdirectory(Generator4Governor)
 add_subdirectory(Generator4Param)
 add_subdirectory(Load)
 add_subdirectory(MiniGrid)
-set(component_models ${component_models} PARENT_SCOPE)

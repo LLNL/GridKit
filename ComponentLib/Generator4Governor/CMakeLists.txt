@@ -55,6 +55,14 @@
 # endorsement purposes.
 #
 
-add_library(Generator4Governor SHARED Generator4Governor.cpp)
-install(TARGETS Generator4Governor LIBRARY DESTINATION lib)
-# set(component_models ${component_models} Generator4Governor PARENT_SCOPE)
+# [[
+#  Author(s):
+#    - Cameron Rutherford <cameron.rutherford@pnnl.gov>
+#]]
+
+gridkit_add_library(generator4governor
+  SOURCES
+    Generator4Governor.cpp
+  OUTPUT_NAME
+    gridkit_generator4governor)
+

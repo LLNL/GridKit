@@ -55,6 +55,11 @@
 # endorsement purposes.
 #
 
+# [[
+#  Author(s):
+#    - Cameron Rutherford <cameron.rutherford@pnnl.gov>
+#]]
+
 add_executable(genconstload GenConstLoad.cpp)
-target_link_libraries(genconstload Generator4Governor Bus Load ${solver_libs})
-install(TARGETS genconstload RUNTIME DESTINATION bin)
+target_link_libraries(genconstload GRIDKIT::generator4governor GRIDKIT::bus GRIDKIT::load GRIDKIT::solvers_dyn GRIDKIT::solvers_opt)
+install(TARGETS genconstload DESTINATION bin)

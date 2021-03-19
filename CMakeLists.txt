@@ -55,17 +55,23 @@
 # endorsement purposes.
 #
 
+# [[
+#  Author(s):
+#    - Cameron Rutherford <cameron.rutherford@pnnl.gov>
+#]]
+
 cmake_minimum_required(VERSION 3.12)
 
 project(gridkit)
 
-set(component_models
-  #generic_model
-)
+set(PACKAGE_NAME "GRIDKIT")
+set(PACKAGE_STRING "GRIDKIT 0.0.6")
+set(PACKAGE_TARNAME "gridkit")
 
-set(solver_libs
-  # generic_solver
-)
+set(PACKAGE_VERSION_MAJOR "1")
+set(PACKAGE_VERSION_MINOR "0")
+
+set(PACKAGE_VERSION "${PACKAGE_VERSION_MAJOR}.${PACKAGE_VERSION_MINOR}")
 
 # Ipopt support is disabled by default
 option(GRIDKIT_ENABLE_IPOPT "Enable Ipopt support" ON)
@@ -74,13 +80,32 @@ option(GRIDKIT_ENABLE_IPOPT "Enable Ipopt support" ON)
 option(GRIDKIT_ENABLE_SUNDIALS "Enable SUNDIALS support" ON)
 
 # Enable KLU
-option(GRIDKIT_ENABLE_SUNDIALS_SPARSE "Enable SUNDIALS sparse linear solvers" OFF)
-
+option(GRIDKIT_ENABLE_SUNDIALS_SPARSE "Enable SUNDIALS sparse linear solvers" ON)
 
 set(CMAKE_MACOSX_RPATH 1)
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/config)
+
+# https://gitlab.kitware.com/cmake/community/-/wikis/doc/cmake/RPATH-handling#always-full-rpath
+# use, i.e. don't skip the full RPATH for the build tree
+set(CMAKE_SKIP_BUILD_RPATH FALSE)
+
+# when building, don't use the install RPATH already
+# (but later on when installing)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/config)
+
+# add the automatically determined parts of the RPATH
+# which point to directories outside the build tree to the install RPATH
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+# the RPATH to be used when installing, but only if it's not a system directory
+list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
+if("${isSystemDir}" STREQUAL "-1")
+    set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+endif("${isSystemDir}" STREQUAL "-1")
+
 
 # TODO: Probably beter to set a debug interface target
 set(CMAKE_CXX_FLAGS_DEBUG "-Wall -O0 -g")
@@ -89,31 +114,61 @@ set(CMAKE_CXX_STANDARD 11)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-option(BUILD_SHARED_LIBS:BOOL "Build shared libraries" ON)
+option(GRIDKIT_BUILD_SHARED "Build shared libraries" ON)
+option(GRIDKIT_BUILD_STATIC "Build static libraries" OFF)
 
 if(GRIDKIT_ENABLE_IPOPT)
   include(FindIpopt)
-  set(CMAKE_INSTALL_RPATH  ${IPOPT_LIBRARY_DIR} ${CMAKE_INSTALL_RPATH})
 endif()
-
-include(FindSUNDIALS)
-set(CMAKE_INSTALL_RPATH  ${SUNDIALS_LIBRARY_DIR} ${CMAKE_INSTALL_RPATH})
-
+if(GRIDKIT_ENABLE_SUNDIALS)
+  find_package(SUNDIALS 5.5.0 REQUIRED CONFIG 
+               PATHS ${SUNDIALS_DIR}
+                     ${SUNDIALS_DIR}/lib/cmake/sundials)
+  message(STATUS "SUNDIALS configuration found: ${SUNDIALS_CONFIG}")
+endif()
 if(GRIDKIT_ENABLE_SUNDIALS_SPARSE)
   include(FindSuiteSparse)
-  set(CMAKE_INSTALL_RPATH  ${SUITESPARSE_LIBRARY_DIR} ${CMAKE_INSTALL_RPATH})
 endif()
-
-include_directories(${SUITESPARSE_INCLUDE_DIR} ${SUNDIALS_INCLUDE_DIR} ${IPOPT_INCLUDE_DIR})
-
 # Set up configuration header file
 # configure_file(gridkit_config.h.in gridkit_config.h)
+
+# Macro that adds libraries
+include(GridkitAddLibrary)
 
 add_subdirectory(ComponentLib)
 add_subdirectory(Solver)
 add_subdirectory(Examples)
 
-# install(FILES gridkit_config.hpp DESTINATION include)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+export(EXPORT gridkit-targets FILE "${CMAKE_CURRENT_BINARY_DIR}/GridKitTargets.cmake")
+
+# Configuring exporting cmake config
+install(EXPORT gridkit-targets
+  FILE GridKitTargets.cmake
+  NAMESPACE GRIDKIT::
+  DESTINATION lib/cmake/gridkit)
+
+include(CMakePackageConfigHelpers)
+
+# Basic version file
+write_basic_package_version_file(
+  GridKitConfigVersion.cmake
+  VERSION ${PACKAGE_VERSION}
+  COMPATIBILITY SameMajorVersion)
+
+# Generate config file that includes exports
+configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/config/Config.cmake.in
+  "${CMAKE_CURRENT_BINARY_DIR}/GridKitConfig.cmake"
+  INSTALL_DESTINATION "lib/cmake/gridkit"
+  NO_SET_AND_CHECK_MACRO
+  NO_CHECK_REQUIRED_COMPONENTS_MACRO)
+
+# Install configuration file
+install(FILES
+  ${CMAKE_CURRENT_BINARY_DIR}/GridKitConfig.cmake
+  ${CMAKE_CURRENT_BINARY_DIR}/GridKitConfigVersion.cmake
+  DESTINATION lib/cmake/gridkit)
 
 # TESTING
 enable_testing()

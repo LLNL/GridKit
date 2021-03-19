@@ -55,6 +55,16 @@
 # endorsement purposes.
 #
 
-add_library(Bus SHARED BusSlack.cpp BusPQ.cpp BusPV.cpp)
-install(TARGETS Bus LIBRARY DESTINATION lib)
-# set(component_models ${component_models} Bus PARENT_SCOPE)
+# [[
+#  Author(s):
+#    - Cameron Rutherford <cameron.rutherford@pnnl.gov>
+#]]
+
+gridkit_add_library(bus
+  SOURCES
+    BusPQ.cpp
+    BusPV.cpp
+    BusSlack.cpp
+  OUTPUT_NAME
+    gridkit_bus)
+

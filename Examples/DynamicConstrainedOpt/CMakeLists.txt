@@ -55,6 +55,12 @@
 # endorsement purposes.
 #
 
+# [[
+#  Author(s):
+#    - Cameron Rutherford <cameron.rutherford@pnnl.gov>
+#]]
+
 add_executable(dynconopt DynamicConstrainedOpt.cpp)
-target_link_libraries(dynconopt Bus Generator4 Generator2 ${solver_libs})
-install(TARGETS dynconopt RUNTIME DESTINATION bin)
+target_link_libraries(dynconopt GRIDKIT::generator4 GRIDKIT::generator2 GRIDKIT::bus GRIDKIT::solvers_dyn GRIDKIT::solvers_opt)
+install(TARGETS dynconopt DESTINATION bin)
+
