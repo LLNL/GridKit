@@ -63,3 +63,5 @@
 add_executable(genconstload GenConstLoad.cpp)
 target_link_libraries(genconstload GRIDKIT::generator4governor GRIDKIT::bus GRIDKIT::load GRIDKIT::solvers_dyn GRIDKIT::solvers_opt)
 install(TARGETS genconstload DESTINATION bin)
+
+add_test(NAME GenConstLoad COMMAND $<TARGET_FILE:genconstload>)

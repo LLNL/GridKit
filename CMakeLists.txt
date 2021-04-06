@@ -68,10 +68,11 @@ set(PACKAGE_NAME "GRIDKIT")
 set(PACKAGE_STRING "GRIDKIT 0.0.6")
 set(PACKAGE_TARNAME "gridkit")
 
-set(PACKAGE_VERSION_MAJOR "1")
+set(PACKAGE_VERSION_MAJOR "0")
 set(PACKAGE_VERSION_MINOR "0")
+set(PACKAGE_VERSION_PATCH "6")
 
-set(PACKAGE_VERSION "${PACKAGE_VERSION_MAJOR}.${PACKAGE_VERSION_MINOR}")
+set(PACKAGE_VERSION "${PACKAGE_VERSION_MAJOR}.${PACKAGE_VERSION_MINOR}.${PACKAGE_VERSION_PATCH}")
 
 # Ipopt support is disabled by default
 option(GRIDKIT_ENABLE_IPOPT "Enable Ipopt support" ON)
@@ -84,7 +85,7 @@ option(GRIDKIT_ENABLE_SUNDIALS_SPARSE "Enable SUNDIALS sparse linear solvers" ON
 
 set(CMAKE_MACOSX_RPATH 1)
 
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/config)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/CMake)
 
 # https://gitlab.kitware.com/cmake/community/-/wikis/doc/cmake/RPATH-handling#always-full-rpath
 # use, i.e. don't skip the full RPATH for the build tree
@@ -129,25 +130,29 @@ endif()
 if(GRIDKIT_ENABLE_SUNDIALS_SPARSE)
   include(FindSuiteSparse)
 endif()
-# Set up configuration header file
-# configure_file(gridkit_config.h.in gridkit_config.h)
 
 # Macro that adds libraries
 include(GridkitAddLibrary)
 
-add_subdirectory(ComponentLib)
-add_subdirectory(Solver)
-add_subdirectory(Examples)
-
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-export(EXPORT gridkit-targets FILE "${CMAKE_CURRENT_BINARY_DIR}/GridKitTargets.cmake")
+# Create component models
+add_subdirectory(ComponentLib)
+
+# Create solvers
+add_subdirectory(Solver)
+
+# Create examples and tests
+enable_testing()
+add_subdirectory(Examples)
+  
+export(EXPORT gridkit-targets FILE ${CMAKE_CURRENT_BINARY_DIR}/GridKitTargets.cmake)
 
 # Configuring exporting cmake config
 install(EXPORT gridkit-targets
   FILE GridKitTargets.cmake
   NAMESPACE GRIDKIT::
-  DESTINATION lib/cmake/gridkit)
+  DESTINATION share/cmake/gridkit)
 
 include(CMakePackageConfigHelpers)
 
@@ -158,9 +163,9 @@ write_basic_package_version_file(
   COMPATIBILITY SameMajorVersion)
 
 # Generate config file that includes exports
-configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/config/Config.cmake.in
-  "${CMAKE_CURRENT_BINARY_DIR}/GridKitConfig.cmake"
-  INSTALL_DESTINATION "lib/cmake/gridkit"
+configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/CMake/Config.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/GridKitConfig.cmake
+  INSTALL_DESTINATION share/cmake/gridkit
   NO_SET_AND_CHECK_MACRO
   NO_CHECK_REQUIRED_COMPONENTS_MACRO)
 
@@ -168,15 +173,4 @@ configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/config/Config.cmake.in
 install(FILES
   ${CMAKE_CURRENT_BINARY_DIR}/GridKitConfig.cmake
   ${CMAKE_CURRENT_BINARY_DIR}/GridKitConfigVersion.cmake
-  DESTINATION lib/cmake/gridkit)
-
-# TESTING
-enable_testing()
-add_test(NAME AdjointSens COMMAND $<TARGET_FILE:adjoint> )
-add_test(NAME Grid3Bus    COMMAND $<TARGET_FILE:grid3bus>)
-if(GRIDKIT_ENABLE_IPOPT)
-  add_test(NAME DynamicConOpt  COMMAND $<TARGET_FILE:dynconopt>   )
-  add_test(NAME GenConstLoad   COMMAND $<TARGET_FILE:genconstload>)
-  add_test(NAME GenInfiniteBus COMMAND $<TARGET_FILE:geninfbus>   )
-  add_test(NAME ParameterEst   COMMAND $<TARGET_FILE:paramest> ${CMAKE_SOURCE_DIR}/Examples/ParameterEstimation/lookup_table.dat)
-endif()
+  DESTINATION share/cmake/gridkit)

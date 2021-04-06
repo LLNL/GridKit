@@ -58,10 +58,16 @@
 # [[
 #  Author(s):
 #    - Cameron Rutherford <cameron.rutherford@pnnl.gov>
+#    - Slaven Peles <slaven.peles@pnnl.gov>
 #]]
 
-add_subdirectory(Dynamic)
-add_subdirectory(SteadyState)
-if(GRIDKIT_ENABLE_IPOPT)
-  add_subdirectory(Optimization)
+if(TARGET SUNDIALS::kinsol)
+  add_subdirectory(SteadyState)
+endif()
+
+if(TARGET SUNDIALS::idas)
+  add_subdirectory(Dynamic)
+  if(GRIDKIT_ENABLE_IPOPT)
+    add_subdirectory(Optimization)
+  endif()
 endif()

@@ -64,3 +64,4 @@ add_executable(dynconopt DynamicConstrainedOpt.cpp)
 target_link_libraries(dynconopt GRIDKIT::generator4 GRIDKIT::generator2 GRIDKIT::bus GRIDKIT::solvers_dyn GRIDKIT::solvers_opt)
 install(TARGETS dynconopt DESTINATION bin)
 
+add_test(NAME DynamicConOpt COMMAND $<TARGET_FILE:dynconopt>)

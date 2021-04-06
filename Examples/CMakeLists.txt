@@ -55,11 +55,16 @@
 # endorsement purposes.
 #
 
-add_subdirectory(AdjointSensitivity)
-add_subdirectory(Grid3Bus)
-if(GRIDKIT_ENABLE_IPOPT)
-  add_subdirectory(DynamicConstrainedOpt)
-  add_subdirectory(GenConstLoad)
-  add_subdirectory(GenInfiniteBus)
-  add_subdirectory(ParameterEstimation)
+if(TARGET SUNDIALS::kinsol)
+  add_subdirectory(Grid3Bus)
+endif()
+
+if(TARGET SUNDIALS::idas)
+  add_subdirectory(AdjointSensitivity)
+  if(GRIDKIT_ENABLE_IPOPT)
+    add_subdirectory(DynamicConstrainedOpt)
+    add_subdirectory(GenConstLoad)
+    add_subdirectory(GenInfiniteBus)
+    add_subdirectory(ParameterEstimation)
+  endif()
 endif()
