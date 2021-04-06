@@ -65,8 +65,6 @@ gridkit_add_library(solvers_opt
     DynamicObjective.cpp
     DynamicConstraint.cpp
   LINK_LIBRARIES
-    PUBLIC SUNDIALS::nvecserial
-    PUBLIC SUNDIALS::idas
     PUBLIC IPOPT
     PUBLIC GRIDKIT::solvers_dyn
   OUTPUT_NAME

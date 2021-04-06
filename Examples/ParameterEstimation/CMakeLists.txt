@@ -64,3 +64,5 @@ add_executable(paramest ParameterEstimation.cpp)
 target_link_libraries(paramest GRIDKIT::bus GRIDKIT::generator4param GRIDKIT::solvers_opt GRIDKIT::solvers_dyn)
 install(TARGETS paramest RUNTIME DESTINATION bin)
 install(FILES lookup_table.dat DESTINATION bin)
+
+add_test(NAME ParameterEst COMMAND $<TARGET_FILE:paramest> ${CMAKE_SOURCE_DIR}/Examples/ParameterEstimation/lookup_table.dat)

@@ -67,6 +67,7 @@ macro(gridkit_add_library target)
 
     add_library(GRIDKIT::${target} ALIAS ${_actual_target_name})
 
+    # Set output name
     if(gridkit_add_library_OUTPUT_NAME)
       set_target_properties(${_actual_target_name} PROPERTIES
         OUTPUT_NAME ${gridkit_add_library_OUTPUT_NAME}
@@ -76,6 +77,12 @@ macro(gridkit_add_library target)
         OUTPUT_NAME ${target}
         CLEAN_DIRECT_OUTPUT 1)
     endif()
+
+    # Set the library version
+    set_target_properties(${_actual_target_name} PROPERTIES
+      VERSION ${PACKAGE_VERSION}
+      SOVERSION ${PACKAGE_VERSION_MAJOR})
+
     install(TARGETS ${_actual_target_name} DESTINATION lib EXPORT gridkit-targets)
   endforeach()
 endmacro()
