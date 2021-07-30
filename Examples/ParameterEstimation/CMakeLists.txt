@@ -61,7 +61,13 @@
 #]]
 
 add_executable(paramest ParameterEstimation.cpp)
-target_link_libraries(paramest GRIDKIT::bus GRIDKIT::generator4param GRIDKIT::solvers_opt GRIDKIT::solvers_dyn)
+target_link_libraries(paramest
+  GRIDKIT::bus
+  GRIDKIT::generator4param
+  GRIDKIT::solvers_opt
+  GRIDKIT::solvers_dyn
+  GRIDKIT::Utilities
+  )
 install(TARGETS paramest RUNTIME DESTINATION bin)
 install(FILES lookup_table.dat DESTINATION bin)
 
