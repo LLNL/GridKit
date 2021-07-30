@@ -81,7 +81,8 @@ option(GRIDKIT_ENABLE_IPOPT "Enable Ipopt support" ON)
 option(GRIDKIT_ENABLE_SUNDIALS "Enable SUNDIALS support" ON)
 
 # Enable KLU
-option(GRIDKIT_ENABLE_SUNDIALS_SPARSE "Enable SUNDIALS sparse linear solvers" ON)
+option(GRIDKIT_ENABLE_SUNDIALS_SPARSE "Enable SUNDIALS sparse linear solvers" OFF)
+
 
 set(CMAKE_MACOSX_RPATH 1)
 
@@ -111,7 +112,7 @@ endif("${isSystemDir}" STREQUAL "-1")
 # TODO: Probably beter to set a debug interface target
 set(CMAKE_CXX_FLAGS_DEBUG "-Wall -O0 -g")
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -138,6 +139,9 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # Create component models
 add_subdirectory(ComponentLib)
+
+# General Utilities and File IO
+add_subdirectory(Utilities)
 
 # Create solvers
 add_subdirectory(Solver)
