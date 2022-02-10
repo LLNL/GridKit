@@ -44,5 +44,5 @@ as functionality test and executed by running `ctest` in the build directory.
 
 ## Contributors
 
-GridKit™ is written by Slaven Peles (slaven.peles@pnnl.gov) and has received contributions
+GridKit™ is written by Slaven Peles (peless@ornl.gov) and has received contributions
 from Tamara Becejac, R. Cameron Rutherford and Asher J. Mancinelli, all from Pacific Northwest National Laboratory.
