@@ -83,6 +83,8 @@ option(GRIDKIT_ENABLE_SUNDIALS "Enable SUNDIALS support" ON)
 # Enable KLU
 option(GRIDKIT_ENABLE_SUNDIALS_SPARSE "Enable SUNDIALS sparse linear solvers" ON)
 
+option(GRIDKIT_ENABLE_ENZYME "Enable automatic differentiation with Enzyme" OFF)
+
 set(CMAKE_MACOSX_RPATH 1)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/CMake)
@@ -122,13 +124,20 @@ if(GRIDKIT_ENABLE_IPOPT)
   include(FindIpopt)
 endif()
 if(GRIDKIT_ENABLE_SUNDIALS)
-  find_package(SUNDIALS 6.0.0 REQUIRED CONFIG 
+  find_package(SUNDIALS REQUIRED CONFIG 
                PATHS ${SUNDIALS_DIR}
                      ${SUNDIALS_DIR}/lib/cmake/sundials)
+  if("${SUNDIALS_VERSION}" VERSION_LESS "5.5.0")
+    message(FATAL_ERROR "GridKit requires SUNDIALS >= 5.5.0, got ${SUNDIALS_VERSION}")
+  endif()
   message(STATUS "SUNDIALS configuration found: ${SUNDIALS_CONFIG}")
 endif()
 if(GRIDKIT_ENABLE_SUNDIALS_SPARSE)
   include(FindSuiteSparse)
+endif()
+
+if(${GRIDKIT_ENABLE_ENZYME})
+  include(FindEnzyme)
 endif()
 
 # Macro that adds libraries
