@@ -88,13 +88,20 @@ namespace Sundials
     Kinsol<ScalarT, IdxT>::Kinsol(ModelLib::ModelEvaluator<ScalarT, IdxT>* model) 
         : SteadyStateSolver<ScalarT, IdxT>(model)
     {
-        solver_ = KINCreate();
+        int retval = 0;
+
+        // Create the SUNDIALS context that all SUNDIALS objects require
+        retval = SUNContext_Create(NULL, &context_);
+        checkOutput(retval, "SUNContext");
+
+        solver_ = KINCreate(context_);
         tag_ = NULL;
     }
 
     template <class ScalarT, typename IdxT>
     Kinsol<ScalarT, IdxT>::~Kinsol()
     {
+        SUNContext_Free(&context_);
     }
 
     template <class ScalarT, typename IdxT>
@@ -103,7 +110,7 @@ namespace Sundials
         int retval = 0;
 
         // Allocate solution vectors
-        yy_ = N_VNew_Serial(model_->size());
+        yy_ = N_VNew_Serial(model_->size(), context_);
         checkAllocation((void*) yy_, "N_VNew_Serial");
 
         // Allocate scaling vector
@@ -138,10 +145,10 @@ namespace Sundials
         checkOutput(retval, "KINSetScaledStepTol");
 
         // Set up linear solver
-        JacobianMat_ = SUNDenseMatrix(model_->size(), model_->size());
+        JacobianMat_ = SUNDenseMatrix(model_->size(), model_->size(), context_);
         checkAllocation((void*) JacobianMat_, "SUNDenseMatrix");
 
-        linearSolver_ = SUNLinSol_Dense(yy_, JacobianMat_);
+        linearSolver_ = SUNLinSol_Dense(yy_, JacobianMat_, context_);
         checkAllocation((void*) linearSolver_, "SUNLinSol_Dense");
 
         retval = KINSetLinearSolver(solver_, linearSolver_, JacobianMat_);
@@ -156,10 +163,10 @@ namespace Sundials
         int retval = 0;
 
         // Set up linear solver
-        JacobianMat_ = SUNDenseMatrix(model_->size(), model_->size());
+        JacobianMat_ = SUNDenseMatrix(model_->size(), model_->size(), context_);
         checkAllocation((void*) JacobianMat_, "SUNDenseMatrix");
 
-        linearSolver_ = SUNLinSol_Dense(yy_, JacobianMat_);
+        linearSolver_ = SUNLinSol_Dense(yy_, JacobianMat_, context_);
         checkAllocation((void*) linearSolver_, "SUNLinSol_Dense");
 
         retval = KINSetLinearSolver(solver_, linearSolver_, JacobianMat_);
@@ -193,8 +200,8 @@ namespace Sundials
     template <class ScalarT, typename IdxT>
     int Kinsol<ScalarT, IdxT>::deleteSimulation()
     {
-        KINFree(&solver_);
         SUNLinSolFree(linearSolver_);
+        KINFree(&solver_);
         N_VDestroy(yy_);
         N_VDestroy(scale_);
         return 0;

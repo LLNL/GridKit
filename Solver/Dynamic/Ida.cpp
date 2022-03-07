@@ -78,7 +78,12 @@ namespace Sundials
     template <class ScalarT, typename IdxT>
     Ida<ScalarT, IdxT>::Ida(ModelLib::ModelEvaluator<ScalarT, IdxT>* model) : DynamicSolver<ScalarT, IdxT>(model)
     {
-        solver_ = IDACreate();
+        int retval = 0;
+
+        // Create the SUNDIALS context that all SUNDIALS objects require
+        retval = SUNContext_Create(NULL, &context_);
+        checkOutput(retval, "SUNContext");
+        solver_ = IDACreate(context_);
         tag_ = NULL;
     }
 
@@ -93,7 +98,7 @@ namespace Sundials
         int retval = 0;
 
         // Allocate solution vectors
-        yy_ = N_VNew_Serial(model_->size());
+        yy_ = N_VNew_Serial(model_->size(), context_);
         checkAllocation((void*) yy_, "N_VNew_Serial");
         yp_ = N_VClone(yy_);
         checkAllocation((void*) yp_, "N_VClone");
@@ -139,10 +144,10 @@ namespace Sundials
         }
 
         // Set up linear solver
-        JacobianMat_ = SUNDenseMatrix(model_->size(), model_->size());
+        JacobianMat_ = SUNDenseMatrix(model_->size(), model_->size(), context_);
         checkAllocation((void*) JacobianMat_, "SUNDenseMatrix");
 
-        linearSolver_ = SUNLinSol_Dense(yy_, JacobianMat_);
+        linearSolver_ = SUNLinSol_Dense(yy_, JacobianMat_, context_);
         checkAllocation((void*) linearSolver_, "SUNLinSol_Dense");
 
         retval = IDASetLinearSolver(solver_, linearSolver_, JacobianMat_);
@@ -157,10 +162,10 @@ namespace Sundials
         int retval = 0;
 
         // Set up linear solver
-        JacobianMat_ = SUNDenseMatrix(model_->size(), model_->size());
+        JacobianMat_ = SUNDenseMatrix(model_->size(), model_->size(), context_);
         checkAllocation((void*) JacobianMat_, "SUNDenseMatrix");
 
-        linearSolver_ = SUNLinSol_Dense(yy_, JacobianMat_);
+        linearSolver_ = SUNLinSol_Dense(yy_, JacobianMat_, context_);
         checkAllocation((void*) linearSolver_, "SUNLinSol_Dense");
 
         retval = IDASetLinearSolver(solver_, linearSolver_, JacobianMat_);
@@ -258,7 +263,7 @@ namespace Sundials
         int retval = 0;
 
         // Create and initialize quadratures
-        q_ = N_VNew_Serial(model_->size_quad());
+        q_ = N_VNew_Serial(model_->size_quad(), context_);
         checkAllocation((void*) q_, "N_VNew_Serial");
 
         // Set integrand function and allocate quadrature workspace
@@ -343,13 +348,13 @@ namespace Sundials
     int Ida<ScalarT, IdxT>::configureAdjoint()
     {
         // Allocate adjoint vector, derivatives and quadrature
-        yyB_ = N_VNew_Serial(model_->size());
+      yyB_ = N_VNew_Serial(model_->size(), context_);
         checkAllocation((void*) yyB_, "N_VNew_Serial");
 
         ypB_ = N_VClone(yyB_);
         checkAllocation((void*) ypB_, "N_VClone");
 
-        qB_ = N_VNew_Serial(model_->size_opt());
+        qB_ = N_VNew_Serial(model_->size_opt(), context_);
         checkAllocation((void*) qB_, "N_VNew_Serial");
 
         return 0;
@@ -399,10 +404,10 @@ namespace Sundials
         checkOutput(retval, "IDASetMaxNumSteps");
 
         // Set up linear solver
-        JacobianMatB_ = SUNDenseMatrix(model_->size(), model_->size());
+        JacobianMatB_ = SUNDenseMatrix(model_->size(), model_->size(), context_);
         checkAllocation((void*) JacobianMatB_, "SUNDenseMatrix");
 
-        linearSolverB_ = SUNLinSol_Dense(yyB_, JacobianMatB_);
+        linearSolverB_ = SUNLinSol_Dense(yyB_, JacobianMatB_, context_);
         checkAllocation((void*) linearSolverB_, "SUNLinSol_Dense");
 
         retval = IDASetLinearSolverB(solver_, backwardID_, linearSolverB_, JacobianMatB_);
@@ -431,11 +436,11 @@ namespace Sundials
         int retval = 0;
 
         // Create Jacobian matrix
-        JacobianMatB_ = SUNDenseMatrix(model_->size(), model_->size());
+        JacobianMatB_ = SUNDenseMatrix(model_->size(), model_->size(), context_);
         checkAllocation((void*) JacobianMatB_, "SUNDenseMatrix");
 
         // Create linear solver
-        linearSolverB_ = SUNLinSol_Dense(yyB_, JacobianMatB_);
+        linearSolverB_ = SUNLinSol_Dense(yyB_, JacobianMatB_, context_);
         checkAllocation((void*) linearSolverB_, "SUNLinSol_Dense");
 
         // Attach linear solver to IDA

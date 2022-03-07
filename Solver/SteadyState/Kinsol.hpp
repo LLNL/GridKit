@@ -185,6 +185,7 @@ namespace AnalysisManager
 
         private:
             void* solver_;
+            SUNContext context_;
             SUNMatrix JacobianMat_;
             SUNLinearSolver linearSolver_;
 

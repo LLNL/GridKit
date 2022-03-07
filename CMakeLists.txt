@@ -122,7 +122,7 @@ if(GRIDKIT_ENABLE_IPOPT)
   include(FindIpopt)
 endif()
 if(GRIDKIT_ENABLE_SUNDIALS)
-  find_package(SUNDIALS 5.5.0 REQUIRED CONFIG 
+  find_package(SUNDIALS 6.0.0 REQUIRED CONFIG 
                PATHS ${SUNDIALS_DIR}
                      ${SUNDIALS_DIR}/lib/cmake/sundials)
   message(STATUS "SUNDIALS configuration found: ${SUNDIALS_CONFIG}")
