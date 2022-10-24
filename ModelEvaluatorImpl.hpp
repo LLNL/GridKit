@@ -76,7 +76,12 @@ namespace ModelLib
     public:
         typedef typename ModelEvaluator<ScalarT, IdxT>::real_type real_type;
 
-        ModelEvaluatorImpl(){}
+        ModelEvaluatorImpl()
+          : size_(0),
+            size_quad_(0),
+            size_opt_(0)
+        {}
+
         ModelEvaluatorImpl(IdxT size, IdxT size_quad, IdxT size_opt)
           : size_(size),
             size_quad_(size_quad),
