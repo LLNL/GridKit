@@ -66,7 +66,7 @@
  */
 #pragma once
 
-#include "MatPowerUtils.hpp"
+#include <PowerSystemData.hpp>
 #include <cmath>
 #include <iostream>
 
@@ -84,14 +84,17 @@ inline std::ostream &errs() {
 namespace GridKit {
 namespace Testing {
 
-template <typename T> bool isEqual(const T value, const T ref, const T tol) {
-  return (std::abs(value - ref) / (1.0 + std::abs(ref)) < tol);
+template <typename T> bool isEqual(const T value, const T ref, const T tol)
+{
+  T error = std::abs(value - ref) / (1.0 + std::abs(ref));
+  return (error < tol);
 }
 
-template <typename IntT = int, typename RealT = double>
-inline bool isEqual(MatPowerUtils::GenCostRow<IntT, RealT> a,
-                    MatPowerUtils::GenCostRow<IntT, RealT> b,
-                    RealT tol = tol_) {
+template <typename RealT = double, typename IdxT = int>
+inline bool isEqual(PowerSystemData::GenCostData<RealT, IdxT> a,
+                    PowerSystemData::GenCostData<RealT, IdxT> b,
+                    RealT tol = tol_)
+{
   int fail = 0;
   fail += a.kind != b.kind;
   fail += a.startup != b.startup;
@@ -103,9 +106,11 @@ inline bool isEqual(MatPowerUtils::GenCostRow<IntT, RealT> a,
   return fail == 0;
 }
 
-template <typename IntT = int, typename RealT = double>
-inline bool isEqual(MatPowerUtils::GenRow<IntT, RealT> a,
-                    MatPowerUtils::GenRow<IntT, RealT> b, RealT tol = tol_) {
+template <typename RealT = double, typename IdxT = int>
+inline bool isEqual(PowerSystemData::GenData<RealT, IdxT> a,
+                    PowerSystemData::GenData<RealT, IdxT> b,
+                    RealT tol = tol_)
+{
   int fail = 0;
   fail += a.bus != b.bus;
   fail += !isEqual(a.Pg, b.Pg, tol);
@@ -134,14 +139,14 @@ inline bool isEqual(MatPowerUtils::GenRow<IntT, RealT> a,
   return fail == 0;
 }
 
-template <typename IntT = int, typename RealT = double>
-inline bool isEqual(MatPowerUtils::BusRow<IntT, RealT> a,
-                    MatPowerUtils::BusRow<IntT, RealT> b, RealT tol = tol_) {
+template <typename RealT = double, typename IdxT = int>
+inline bool isEqual(PowerSystemData::BusData<RealT, IdxT> a,
+                    PowerSystemData::BusData<RealT, IdxT> b,
+                    RealT tol = tol_)
+{
   int fail = 0;
   fail += a.bus_i != b.bus_i;
   fail += a.type != b.type;
-  fail += a.Pd != b.Pd;
-  fail += !isEqual(a.Qd, b.Qd, tol);
   fail += a.Gs != b.Gs;
   fail += a.Bs != b.Bs;
   fail += a.area != b.area;
@@ -154,8 +159,6 @@ inline bool isEqual(MatPowerUtils::BusRow<IntT, RealT> a,
   if (fail) {
     errs() << "bus_i: a=" << a.bus_i << ", b=" << b.bus_i << "\n"
            << "type: a=" << a.type << ", b=" << b.type << "\n"
-           << "Pd: a=" << a.Pd << ", b=" << b.Pd << "\n"
-           << "Qd: a=" << a.Qd << ", b=" << b.Qd << "\n"
            << "Gs: a=" << a.Gs << ", b=" << b.Gs << "\n"
            << "Bs: a=" << a.Bs << ", b=" << b.Bs << "\n"
            << "area: a=" << a.area << ", b=" << b.area << "\n"
@@ -169,9 +172,28 @@ inline bool isEqual(MatPowerUtils::BusRow<IntT, RealT> a,
   return fail == 0;
 }
 
-template <typename IntT = int, typename RealT = double>
-inline bool isEqual(MatPowerUtils::BranchRow<IntT, RealT> a,
-                    MatPowerUtils::BranchRow<IntT, RealT> b, RealT tol = tol_) {
+template <typename RealT = double, typename IdxT = int>
+inline bool isEqual(PowerSystemData::LoadData<RealT, IdxT> a,
+                    PowerSystemData::LoadData<RealT, IdxT> b,
+                    RealT tol = tol_)
+{
+  int fail = 0;
+  fail += a.bus_i != b.bus_i;
+  fail += !isEqual(a.Pd, b.Pd, tol);
+  fail += !isEqual(a.Qd, b.Qd, tol);
+  if (fail) {
+    errs() << "bus_i: a=" << a.bus_i << ", b=" << b.bus_i << "\n"
+           << "Pd: a="    << a.Pd    << ", b=" << b.Pd    << "\n"
+           << "Qd: a="    << a.Qd    << ", b=" << b.Qd    << "\n";
+  }
+  return fail == 0;
+}
+
+template <typename RealT = double, typename IdxT = int>
+inline bool isEqual(PowerSystemData::BranchData<RealT, IdxT> a,
+                    PowerSystemData::BranchData<RealT, IdxT> b,
+                    RealT tol = tol_)
+{
   int fail = 0;
   fail += a.fbus != b.fbus;
   fail += a.tbus != b.tbus;
@@ -193,7 +215,8 @@ inline bool isEqual(MatPowerUtils::BranchRow<IntT, RealT> a,
 }
 
 template <typename T>
-inline bool isEqual(std::vector<T> a, std::vector<T> b, double tol = tol_) {
+inline bool isEqual(std::vector<T> a, std::vector<T> b, double tol = tol_)
+{
   if (a.size() != b.size())
     throw std::runtime_error([&] {
       std::stringstream errs;
@@ -214,9 +237,10 @@ inline bool isEqual(std::vector<T> a, std::vector<T> b, double tol = tol_) {
   return fail == 0;
 }
 
-template <typename IntT = int, typename RealT = double>
-inline bool isEqual(MatPowerUtils::MatPower<IntT, RealT> a,
-                    MatPowerUtils::MatPower<IntT, RealT> b) {
+template <typename RealT = double, typename IdxT = int>
+inline bool isEqual(PowerSystemData::SystemModelData<RealT, IdxT> a,
+                    PowerSystemData::SystemModelData<RealT, IdxT> b)
+{
   int fail = 0;
   fail += a.version != b.version;
   fail += a.baseMVA != b.baseMVA;
@@ -224,6 +248,7 @@ inline bool isEqual(MatPowerUtils::MatPower<IntT, RealT> a,
   fail += !isEqual(a.gen, b.gen);
   fail += !isEqual(a.gencost, b.gencost);
   fail += !isEqual(a.branch, b.branch);
+  fail += !isEqual(a.load, b.load);
   return fail == 0;
 }
 

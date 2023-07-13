@@ -57,148 +57,44 @@
  *
  */
 
-#ifndef _BUS_SLACK_HPP_
-#define _BUS_SLACK_HPP_
+#pragma once
 
-#include "BaseBus.hpp"
 #include <PowerSystemData.hpp>
+#include <ComponentLib/Bus/BusPQ.hpp>
+#include <ComponentLib/Bus/BusPV.hpp>
+#include <ComponentLib/Bus/BusSlack.hpp>
 
-namespace ModelLib
-{
-    /*!
-     * @brief Implementation of a slack bus.
-     *
-     * Slack bus sets voltage _V_ and phase _theta_ as constants.
-     * Active and reactive power, _P_ and _Q_, are component model outputs,
-     * but are computed outside the BusSlack class.
-     *
-     *
-     */
-    template  <class ScalarT, typename IdxT>
-    class BusSlack : public BaseBus<ScalarT, IdxT>
+namespace ModelLib {
+
+    template <typename ScalarT = double, typename IdxT = int>
+    class BusFactory
     {
-        using BaseBus<ScalarT, IdxT>::size_;
-        using BaseBus<ScalarT, IdxT>::y_;
-        using BaseBus<ScalarT, IdxT>::yp_;
-        using BaseBus<ScalarT, IdxT>::f_;
-        using BaseBus<ScalarT, IdxT>::g_;
-        using BaseBus<ScalarT, IdxT>::atol_;
-        using BaseBus<ScalarT, IdxT>::rtol_;
-
     public:
         using real_type = typename ModelEvaluatorImpl<ScalarT, IdxT>::real_type;
         using BusData = GridKit::PowerSystemData::BusData<real_type, IdxT>;
 
-        BusSlack();
-        BusSlack(ScalarT V, ScalarT theta);
-        BusSlack(BusData& data);
-        virtual ~BusSlack();
-        virtual int evaluateResidual();
-        virtual int evaluateAdjointResidual();
+        BusFactory() = delete;
 
-        /// @todo Should slack bus allow changing voltage?
-        virtual ScalarT& V()
+        static BaseBus<ScalarT, IdxT>* create(BusData& data)
         {
-            return V_;
+            BaseBus<ScalarT, IdxT>* bus = nullptr;
+            switch(data.type)
+            {
+                case 1:
+                bus = new BusPQ<ScalarT, IdxT>(data);
+                break;
+                case 2:
+                bus = new BusPV<ScalarT, IdxT>(data);
+                break;
+                case 3:
+                bus = new BusSlack<ScalarT, IdxT>(data);
+                break;
+                default:
+                // Throw exception
+                std::cout << "Bus type " << data.type << " unrecognized.\n";
+            }
+            return bus;
         }
-
-        virtual const ScalarT& V() const
-        {
-            return V_;
-        }
-
-        /// @todo Should slack bus allow changing phase?
-        virtual ScalarT& theta()
-        {
-            return theta_;
-        }
-
-        virtual const ScalarT& theta() const
-        {
-            return theta_;
-        }
-
-        virtual ScalarT& P()
-        {
-            return P_;
-        }
-
-        virtual const ScalarT& P() const
-        {
-            return P_;
-        }
-
-        virtual ScalarT& Q()
-        {
-            return Q_;
-        }
-
-        virtual const ScalarT& Q() const
-        {
-            return Q_;
-        }
-
-        /// @todo Should slack bus allow changing voltage?
-        virtual ScalarT& lambdaP()
-        {
-            return thetaB_;
-        }
-
-        virtual const ScalarT& lambdaP() const
-        {
-            return thetaB_;
-        }
-
-        /// @todo Should slack bus allow changing phase?
-        virtual ScalarT& lambdaQ()
-        {
-            return VB_;
-        }
-
-        virtual const ScalarT& lambdaQ() const
-        {
-            return VB_;
-        }
-
-        virtual ScalarT& PB()
-        {
-            return PB_;
-        }
-
-        virtual const ScalarT& PB() const
-        {
-            return PB_;
-        }
-
-        virtual ScalarT& QB()
-        {
-            return QB_;
-        }
-
-        virtual const ScalarT& QB() const
-        {
-            return QB_;
-        }
-
-        virtual const int BusType() const
-        {
-            return BaseBus<ScalarT, IdxT>::BusType::Slack;
-        }
-
-    private:
-        ScalarT V_;
-        ScalarT theta_;
-        ScalarT P_;
-        ScalarT Q_;
-
-        ScalarT VB_;
-        ScalarT thetaB_;
-        ScalarT PB_;
-        ScalarT QB_;
-
-    }; // class BusSlack
+    };
 
 } // namespace ModelLib
-
-
-#endif // _BUS_SLACK_HPP_

@@ -62,6 +62,7 @@
 
 #include <cassert>
 #include "BaseBus.hpp"
+#include <PowerSystemData.hpp>
 
 namespace ModelLib
 {
@@ -86,10 +87,12 @@ namespace ModelLib
         using BaseBus<ScalarT, IdxT>::tag_;
 
     public:
-        typedef typename ModelEvaluatorImpl<ScalarT, IdxT>::real_type real_type;
+        using real_type = typename ModelEvaluatorImpl<ScalarT, IdxT>::real_type;
+        using BusData = GridKit::PowerSystemData::BusData<real_type, IdxT>;
 
         BusPV();
         BusPV(ScalarT V, ScalarT theta0, ScalarT P);
+        BusPV(BusData& data);
         virtual ~BusPV();
 
         virtual int allocate();
@@ -186,6 +189,11 @@ namespace ModelLib
         {
             assert(false);
             return QB_;
+        }
+
+        virtual const int BusType() const
+        {
+            return BaseBus<ScalarT, IdxT>::BusType::PV;
         }
 
     private:

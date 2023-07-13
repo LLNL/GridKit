@@ -57,157 +57,112 @@
  *
  */
 
+
 #include <iostream>
 #include <cmath>
-#include "BusPQ.hpp"
+#include <vector>
+#include "GeneratorPQ.hpp"
+#include <ComponentLib/Bus/BaseBus.hpp>
 
 namespace ModelLib {
 
 /*!
- * @brief Constructor for a PQ bus
+ * @brief Constructor for a constant load model
  *
- * @todo Arguments that should be passed to ModelEvaluatorImpl constructor:
- * - Number of equations = 2 (size_)
- * - Number of variables = 2 (size_)
- * - Number of quadratures = 0
- * - Number of optimization parameters = 0
+ * Calls default ModelEvaluatorImpl constructor.
  */
-template <class ScalarT, typename IdxT>
-BusPQ<ScalarT, IdxT>::BusPQ()
-  : BaseBus<ScalarT, IdxT>(0), V0_(0.0), theta0_(0.0)
-{
-    //std::cout << "Create BusPQ..." << std::endl;
-    //std::cout << "Number of equations is " << size_ << std::endl;
 
-    size_ = 2;
+template <class ScalarT, typename IdxT>
+GeneratorPQ<ScalarT, IdxT>::GeneratorPQ(bus_type* bus, GenData& data)
+  : P_(data.Pg),
+    Q_(data.Qg),
+    bus_(bus)
+{
+    //std::cout << "Create a load model with " << size_ << " variables ...\n";
+    size_ = 0;
+}
+
+template <class ScalarT, typename IdxT>
+GeneratorPQ<ScalarT, IdxT>::~GeneratorPQ()
+{
 }
 
 /*!
- * @brief BusPQ constructor.
+ * @brief allocate method computes sparsity pattern of the Jacobian.
+ */
+template <class ScalarT, typename IdxT>
+int GeneratorPQ<ScalarT, IdxT>::allocate()
+{
+    return 0;
+}
+
+/**
+ * Initialization of the grid model
+ */
+template <class ScalarT, typename IdxT>
+int GeneratorPQ<ScalarT, IdxT>::initialize()
+{
+    return 0;
+}
+
+/*
+ * \brief Identify differential variables
+ */
+template <class ScalarT, typename IdxT>
+int GeneratorPQ<ScalarT, IdxT>::tagDifferentiable()
+{
+    return 0;
+}
+
+/**
+ * @brief Contributes to the bus residual.
  *
- * This constructor sets initial values for voltage and phase angle.
- *
- * @todo Arguments that should be passed to ModelEvaluatorImpl constructor:
- * - Number of equations = 2 (size_)
- * - Number of variables = 2 (size_)
- * - Number of quadratures = 0
- * - Number of optimization parameters = 0
+ * Must be connected to a PQ bus.
  */
 template <class ScalarT, typename IdxT>
-BusPQ<ScalarT, IdxT>::BusPQ(ScalarT V, ScalarT theta)
-  : BaseBus<ScalarT, IdxT>(0), V0_(V), theta0_(theta)
+int GeneratorPQ<ScalarT, IdxT>::evaluateResidual()
 {
-    //std::cout << "Create BusPQ..." << std::endl;
-    //std::cout << "Number of equations is " << size_ << std::endl;
-
-    size_ = 2;
-}
-
-template <class ScalarT, typename IdxT>
-BusPQ<ScalarT, IdxT>::BusPQ(BusData& data)
-  : BaseBus<ScalarT, IdxT>(data.bus_i), V0_(data.Vm), theta0_(data.Va)
-{
-    //std::cout << "Create BusPQ..." << std::endl;
-    //std::cout << "Number of equations is " << size_ << std::endl;
-
-    size_ = 2;
-}
-
-template <class ScalarT, typename IdxT>
-BusPQ<ScalarT, IdxT>::~BusPQ()
-{
-    //std::cout << "Destroy PQ bus ..." << std::endl;
-}
-
-/*!
- * @brief allocate method resizes local solution and residual vectors.
- */
-template <class ScalarT, typename IdxT>
-int BusPQ<ScalarT, IdxT>::allocate()
-{
-    //std::cout << "Allocate PQ bus ..." << std::endl;
-    f_.resize(size_);
-    y_.resize(size_);
-    yp_.resize(size_);
-    tag_.resize(size_);
-
-    fB_.resize(size_);
-    yB_.resize(size_);
-    ypB_.resize(size_);
-
-    return 0;
-}
-
-
-template <class ScalarT, typename IdxT>
-int BusPQ<ScalarT, IdxT>::tagDifferentiable()
-{
-    tag_[0] = false;
-    tag_[1] = false;
-    return 0;
-}
-
-
-/*!
- * @brief initialize method sets bus variables to stored initial values.
- */
-template <class ScalarT, typename IdxT>
-int BusPQ<ScalarT, IdxT>::initialize()
-{
-    // std::cout << "Initialize BusPQ..." << std::endl;
-    y_[0] = V0_;
-    y_[1] = theta0_;
-    yp_[0] = 0.0;
-    yp_[1] = 0.0;
-
-    return 0;
-}
-
-/*!
- * @brief PQ bus does not compute residuals, so here we just reset residual values.
- *
- * @warning This implementation assumes bus residuals are always evaluated
- * _before_ component model residuals.
- *
- */
-template <class ScalarT, typename IdxT>
-int BusPQ<ScalarT, IdxT>::evaluateResidual()
-{
-    // std::cout << "Evaluating residual of a PQ bus ...\n";
-    f_[0] = 0.0;
-    f_[1] = 0.0;
-    return 0;
-}
-
-
-/*!
- * @brief initialize method sets bus variables to stored initial values.
- */
-template <class ScalarT, typename IdxT>
-int BusPQ<ScalarT, IdxT>::initializeAdjoint()
-{
-    // std::cout << "Initialize BusPQ..." << std::endl;
-    yB_[0] = 0.0;
-    yB_[1] = 0.0;
-    ypB_[0] = 0.0;
-    ypB_[1] = 0.0;
-
+    // std::cout << "Evaluating load residual ...\n";
+    bus_->P() += P_;
+    bus_->Q() += Q_;
     return 0;
 }
 
 template <class ScalarT, typename IdxT>
-int BusPQ<ScalarT, IdxT>::evaluateAdjointResidual()
+int GeneratorPQ<ScalarT, IdxT>::evaluateJacobian()
 {
-    fB_[0] = 0.0;
-    fB_[1] = 0.0;
-
     return 0;
 }
+
+template <class ScalarT, typename IdxT>
+int GeneratorPQ<ScalarT, IdxT>::evaluateIntegrand()
+{
+    return 0;
+}
+
+template <class ScalarT, typename IdxT>
+int GeneratorPQ<ScalarT, IdxT>::initializeAdjoint()
+{
+    return 0;
+}
+
+template <class ScalarT, typename IdxT>
+int GeneratorPQ<ScalarT, IdxT>::evaluateAdjointResidual()
+{
+    return 0;
+}
+
+template <class ScalarT, typename IdxT>
+int GeneratorPQ<ScalarT, IdxT>::evaluateAdjointIntegrand()
+{
+    return 0;
+}
+
 
 // Available template instantiations
-template class BusPQ<double, long int>;
-template class BusPQ<double, size_t>;
+template class GeneratorPQ<double, long int>;
+template class GeneratorPQ<double, size_t>;
 
 
-} // namespace ModelLib
+} //namespace ModelLib
 
