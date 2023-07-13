@@ -1,15 +1,15 @@
 #include <FileIO.hpp>
-#include <MatPowerUtils.hpp>
+#include <PowerSystemData.hpp>
 #include <Testing.hpp>
 #include <iostream>
 
 using namespace GridKit;
 using namespace GridKit::Testing;
-using namespace GridKit::MatPowerUtils;
+using namespace GridKit::PowerSystemData;
 
 namespace {
 
-using IntT = int;
+using IdxT = int;
 using RealT = double;
 
 static const std::string matpower_data{
@@ -85,14 +85,15 @@ int main(int argc, char **argv) {
   int fail = 0;
 
   // All types will use the scalar types at the top of the file
-  using BusRowT = BusRow<IntT, RealT>;
-  using GenRowT = GenRow<IntT, RealT>;
-  using BranchRowT = BranchRow<IntT, RealT>;
-  using GenCostRowT = GenCostRow<IntT, RealT>;
-  using MatPowerT = MatPower<IntT, RealT>;
+  using BusDataT = BusData<RealT, IdxT>;
+  using GenDataT = GenData<RealT, IdxT>;
+  using BranchDataT = BranchData<RealT, IdxT>;
+  using GenCostDataT = GenCostData<RealT, IdxT>;
+  using SystemModelDataT = SystemModelData<RealT, IdxT>;
+  using LoadDataT = LoadData<RealT, IdxT>;
 
   // Create the struct of expected values
-  std::vector<BranchRowT> branch_answer{
+  std::vector<BranchDataT> branch_answer{
       {1, 2, 0.00281, 0.0281, 0.00712, 400, 400, 400, 0, 0, 1, -360, 360},
       {1, 4, 0.00304, 0.0304, 0.00658, 0, 0, 0, 0, 0, 1, -360, 360},
       {1, 5, 0.00064, 0.0064, 0.03126, 0, 0, 0, 0, 0, 1, -360, 360},
@@ -100,14 +101,14 @@ int main(int argc, char **argv) {
       {3, 4, 0.00297, 0.0297, 0.00674, 0, 0, 0, 0, 0, 1, -360, 360},
       {4, 5, 0.00297, 0.0297, 0.00674, 240, 240, 240, 0, 0, 1, -360, 360},
   };
-  std::vector<BusRowT> bus_answer{
-      {1, 2, 0, 0, 0, 0, 1, 1, 0, 230, 1, 1.1, 0.0},
-      {2, 1, 300, 98.61, 0, 0, 1, 1, 0, 230, 1, 1.1, 0.0},
-      {3, 2, 300, 98.61, 0, 0, 1, 1, 0, 230, 1, 1.1, 0.0},
-      {4, 3, 400, 131.47, 0, 0, 1, 1, 0, 230, 1, 1.1, 0.0},
-      {5, 2, 0, 0, 0, 0, 1, 1, 0, 230, 1, 1.1, 0.9},
+  std::vector<BusDataT> bus_answer{
+      {1, 2, 0, 0, 1, 1, 0, 230, 1, 1.1, 0.0},
+      {2, 1, 0, 0, 1, 1, 0, 230, 1, 1.1, 0.0},
+      {3, 2, 0, 0, 1, 1, 0, 230, 1, 1.1, 0.0},
+      {4, 3, 0, 0, 1, 1, 0, 230, 1, 1.1, 0.0},
+      {5, 2, 0, 0, 1, 1, 0, 230, 1, 1.1, 0.9},
   };
-  std::vector<GenRowT> gen_answer{
+  std::vector<GenDataT> gen_answer{
       {1, 40, 0, 30, -30, 1, 100, 1, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
       {1, 170, 0, 127.5, -127.5, 1, 100, 1, 170, 0, 0,
        0, 0,   0, 0,     0,      0, 0,   0, 0,   0},
@@ -116,28 +117,37 @@ int main(int argc, char **argv) {
       {4, 0, 0, 150, -150, 1, 100, 1, 200, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
       {5, 466.51, 0, 450, -450, 1, 100, 1, 600, 0, 0,
        0, 0,      0, 0,   0,    0, 0,   0, 0,   0}};
-  std::vector<GenCostRowT> gencost_answer{
+  std::vector<GenCostDataT> gencost_answer{
       {2, 0, 0, 3, {0, 14, 0}}, {2, 0, 0, 3, {0, 15, 0}},
       {2, 0, 0, 3, {0, 30, 0}}, {2, 0, 0, 3, {0, 40, 0}},
       {2, 0, 0, 3, {0, 10, 0}},
   };
+  std::vector<LoadDataT> load_answer{
+      {1,   0,      0},
+      {2, 300,  98.61},
+      {3, 300,  98.61},
+      {4, 400, 131.47},
+      {5,   0,      0},
+  };
 
-  MatPowerT mp_answer;
+
+  SystemModelDataT mp_answer;
   mp_answer.gencost = gencost_answer;
   mp_answer.gen = gen_answer;
   mp_answer.bus = bus_answer;
   mp_answer.branch = branch_answer;
+  mp_answer.load = load_answer;
   mp_answer.version = "2";
   mp_answer.baseMVA = 100;
 
-  MatPowerT mp;
+  SystemModelDataT mp;
 
   {
     std::istringstream iss(matpower_data);
     GridKit::readMatPower(mp, iss);
     if (!isEqual(mp, mp_answer))
       fail++;
-    std::cout << "After reading the gencost component, fail == " << fail
+    std::cout << "\n\nAfter reading the gencost component, fail == " << fail
               << "\n";
   }
 

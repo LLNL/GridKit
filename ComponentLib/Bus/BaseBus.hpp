@@ -102,7 +102,9 @@ namespace ModelLib
     public:
         typedef typename ModelEvaluatorImpl<ScalarT, IdxT>::real_type real_type;
 
-        BaseBus(){}
+        enum BusType{PQ=1, PV, Slack, Isolated};
+
+        BaseBus(IdxT id) : busID_(id) {}
         virtual ~BaseBus(){}
 
         // Set defaults for ModelEvaluator methods
@@ -138,6 +140,15 @@ namespace ModelLib
         virtual ScalarT& QB() = 0;
         virtual const ScalarT& QB() const = 0;
 
+        virtual const int BusType() const = 0;
+
+        virtual const IdxT BusID() const
+        {
+            return busID_;
+        }
+
+    protected:
+        const IdxT busID_;
     }; // class BaseBus
 
 } // namespace ModelLib

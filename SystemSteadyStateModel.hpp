@@ -127,11 +127,50 @@ public:
         atol_ = 1e-5;
     }
 
+    SystemSteadyStateModel(GridKit::PowerSystemData::SystemModelData<ScalarT, IdxT> mp) : ModelEvaluatorImpl<ScalarT, IdxT>(0,0,0)
+    {
+        rtol_ = 1e-5;
+        atol_ = 1e-5;
+
+        //buses
+        for(auto busdata : mp.bus)
+        {
+            auto* bus = BusFactory<double, size_t>::create(busdata);
+            this->addBus(bus);
+        }
+
+        //generators
+        for (auto gendata : mp.gen)
+        {
+            auto* gen = GeneratorFactory<double,size_t>::create(this->getBus(gendata.bus),gendata);
+            this->addComponent(gen);
+        }
+
+        //branches
+        for (auto branchdata : mp.branch)
+        {
+            auto* branch = new Branch<double, size_t>(this->getBus(branchdata.fbus),this->getBus(branchdata.tbus),branchdata);
+            this->addComponent(branch);
+        }
+
+        //loads
+        for (auto loaddata : mp.load)
+        {
+            auto* loadm = new Load<double,size_t>(this->getBus(loaddata.bus_i),loaddata);
+            this->addComponent(loadm);
+        }
+
+        //There appears to not be a Generator Cost Object
+        //TODO: Implment for GenCost
+    }
+
     /**
      * @brief Destructor for the system model
      */
     virtual ~SystemSteadyStateModel()
     {
+        for (auto comp : this->components_) delete comp;
+        for (auto bus : this->buses_) delete bus;
     }
 
     /**
@@ -367,6 +406,13 @@ public:
     void addComponent(component_type* component)
     {
         components_.push_back(component);
+    }
+
+    bus_type* getBus(IdxT busid)
+    {
+        // Need to implement mapping of bus IDs to buses in the system model
+        assert( (buses_[busid - 1])->BusID() == busid );
+        return buses_[busid - 1];
     }
 
 private:
